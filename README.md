@@ -54,6 +54,10 @@ to quit. See [key bindings](docs/keybindings.md) for all shortcuts.
 
 ## Features
 
+![headquarters in the tree view: repositories grouped by family with health
+symbols, family summaries, and the detail panel of the selected
+repository](docs/images/headquarters-screenshot.png)
+
 - Explicit repositories plus bounded discovery below root directories, with
   include and exclude patterns and clear precedence rules.
 - Status per repository: branch, detached or unborn HEAD, operations in
