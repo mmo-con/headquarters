@@ -26,8 +26,7 @@ func runStatus(args []string, stdout, stderr io.Writer, getenv func(string) stri
 	flags := flag.NewFlagSet("headquarters status", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	configFlag := flags.String("config", "", "path of the configuration file")
-	jsonFlag := flags.Bool("json", false, "print one JSON document (the default format)")
-	format := flags.String("format", "", "output `format`: json or ndjson (one repository per line)")
+	format := flags.String("format", "json", "output `format`: json (one document) or ndjson (one repository per line)")
 	filter := flags.String("filter", "", "report only repositories matching the dashboard filter `expression`")
 	fetch := flags.Bool("fetch", false, "fetch the matching repositories first; without it, no network access")
 	failOn := flags.String("fail-on", "", "exit with status 3 if a reported repository is in one of the comma-separated `states`")
@@ -52,13 +51,8 @@ func runStatus(args []string, stdout, stderr io.Writer, getenv func(string) stri
 		fmt.Fprintf(stderr, "headquarters status: "+format+"\n", a...)
 		return 2
 	}
-	switch {
-	case *format == "":
-		*format = "json"
-	case *format != "json" && *format != "ndjson":
+	if *format != "json" && *format != "ndjson" {
 		return usageError("unknown format %q; use json or ndjson", *format)
-	case *jsonFlag && *format != "json":
-		return usageError("--json conflicts with --format %s", *format)
 	}
 	if err := app.ValidateFilter(*filter, false); err != nil {
 		return usageError("invalid filter: %v", err)

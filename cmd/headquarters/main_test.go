@@ -369,7 +369,7 @@ func field(r map[string]any, path string) any {
 
 func TestStatusReportsEveryRepository(t *testing.T) {
 	config, _, clean := statusRepos(t)
-	doc := statusJSON(t, 0, "--config", config, "--json")
+	doc := statusJSON(t, 0, "--config", config)
 	if doc.Schema != 1 || doc.GeneratedAt == "" {
 		t.Fatalf("schema=%d generated_at=%q", doc.Schema, doc.GeneratedAt)
 	}
@@ -625,8 +625,8 @@ func TestStatusNDJSON(t *testing.T) {
 			t.Errorf("line without branches: %q", line)
 		}
 	}
-	if code, _, _ := runCLI(t, nil, "status", "--config", config, "--json", "--format", "ndjson"); code != 2 {
-		t.Errorf("--json with --format ndjson: code=%d", code)
+	if code, _, _ := runCLI(t, nil, "status", "--config", config, "--format", "xml"); code != 2 {
+		t.Errorf("--format xml: code=%d", code)
 	}
 }
 

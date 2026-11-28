@@ -162,7 +162,7 @@ headquarters ~/src                # repositories below ~/src, no inventory confi
 headquarters --config path.toml   # explicit configuration file
 headquarters --check              # validate the configuration and print the inventory
 headquarters --version
-headquarters status --json        # print the status as JSON and exit, see below
+headquarters status               # print the status as JSON and exit, see below
 headquarters init ~/src ~/work    # print a starting configuration for these directories
 headquarters init -o config.toml ~/src   # write it to a file; --force replaces an existing file
 ```
@@ -186,7 +186,7 @@ unpushed work before shutting down. It never changes a repository and
 accesses the network only with `--fetch`.
 
 ```sh
-headquarters status --json                                    # one JSON document
+headquarters status                                           # one JSON document
 headquarters status --filter "is:dirty family:work"           # dashboard filter syntax
 headquarters status --format ndjson                           # one repository per line
 headquarters status --fail-on dirty,ahead,unpublished,unknown # exit 3 if any repository matches
