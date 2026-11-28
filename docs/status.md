@@ -55,7 +55,8 @@ field is renamed, removed, or changes its meaning:
 {
   "schema": 1,
   "generated_at": "2026-11-23T17:00:00Z",
-  "summary": { "total": 42, "dirty": 5, "behind": 3, "unknown": 1, "…": 0,
+  "summary": { "total": 42,
+               "states": { "dirty": 5, "behind": 3, "unknown": 1, "…": 0 },
                "health": { "error": 0, "critical": 1, "dirty": 5, "…": 0 } },
   "repositories": [
     {
@@ -93,8 +94,9 @@ field is renamed, removed, or changes its meaning:
 With `--format ndjson`, each line is one entry of `repositories` with its
 own `schema` field; there is no `generated_at` and no `summary`.
 
-- `summary` counts the reported repositories in total, per `--fail-on`
-  state, and per `health` level.
+- `summary` counts the reported repositories in `total`, per `--fail-on`
+  state in `states`, and per `health` level in `health`. `states` and
+  `health` list every state and level, including those with a count of 0.
 - `health` is the level of the dashboard's health column: `error`,
   `critical`, `dirty`, `behind`, `ahead`, `attention`, `ok`, or `unknown`.
 - `availability` is `available`, `missing`, `not_a_repository`,
