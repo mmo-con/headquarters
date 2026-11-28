@@ -40,9 +40,19 @@ func TestReportOperationValues(t *testing.T) {
 	} {
 		r := domain.Repository{Name: "r"}
 		r.Operation = domain.KnownValue(op)
+		r.Worktree = domain.KnownValue(domain.WorktreeState{})
 		rr := repositoryReport(reportStatus(r), &r)
-		if rr.Operation == nil || *rr.Operation != want {
-			t.Errorf("%v: operation = %v, want %q", op, rr.Operation, want)
+		if rr.Worktree == nil || rr.Worktree.Operation == nil || *rr.Worktree.Operation != want {
+			t.Errorf("%v: worktree = %v, want operation %q", op, rr.Worktree, want)
 		}
+	}
+}
+
+func TestReportStashesWithUnknownWorktree(t *testing.T) {
+	r := domain.Repository{Name: "r"}
+	r.Stashes = domain.KnownValue(2)
+	rr := repositoryReport(reportStatus(r), &r)
+	if rr.Worktree != nil || rr.Stashes == nil || *rr.Stashes != 2 {
+		t.Errorf("worktree = %v, stashes = %v, want null and 2", rr.Worktree, rr.Stashes)
 	}
 }

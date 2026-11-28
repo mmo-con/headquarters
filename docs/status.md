@@ -76,9 +76,9 @@ field is renamed, removed, or changes its meaning:
                     "time": "2026-11-22T20:41:00Z" },
         "upstream": { "name": "origin/main", "gone": false, "ahead": 0, "behind": 3 }
       },
-      "operation": "none",
-      "counts": { "staged": 0, "modified": 2, "deleted": 0, "renamed": 0,
-                  "conflicts": 0, "untracked": 1, "stashed": 1 },
+      "worktree": { "operation": "none", "staged": 0, "modified": 2, "deleted": 0,
+                    "renamed": 0, "conflicts": 0, "untracked": 1 },
+      "stashes": 1,
       "branches": [
         { "name": "release", "state": "behind", "pinned": true,
           "upstream": { "name": "origin/release", "gone": false, "ahead": 0, "behind": 2 },
@@ -113,15 +113,17 @@ own `schema` field; there is no `generated_at` and no `summary`.
   fields: `name` is `null` when no upstream is configured, `gone` reports an
   upstream that no longer exists, and `ahead` and `behind` are `null` unless
   the upstream exists.
-- `operation` is `none` or the operation in progress: `merging`, `rebasing`, `cherry_picking`,
-  `reverting`, or `bisecting`.
+- `worktree` counts the changed entries of the worktree; its `operation` is
+  `none` or the operation in progress: `merging`, `rebasing`, `cherry_picking`,
+  `reverting`, or `bisecting`. `stashes` is the number of stash entries,
+  which all worktrees of a repository share.
 - Values are stable identifiers, not display text. Values taken from the
   filter language, such as the `--fail-on` states, are spelled as there;
   all others use snake_case.
 - Unknown state is `null`, and `known` is `false` if any part of the state
   could not be determined; an unknown repository is never reported as clean
-  or up to date. `counts.untracked` is `null` when untracked files are not
-  checked, `last_fetch` when the repository was never fetched or the time is
+  or up to date. `worktree.untracked` is `null` when untracked files are not
+  checked, `worktree` and `stashes` when they cannot be read, `last_fetch` when the repository was never fetched or the time is
   unknown, `head` when HEAD cannot be read, and `head.upstream` when the
   upstream state is unknown. A count is `0` only when it is known to be
   zero.

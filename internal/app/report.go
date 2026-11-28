@@ -44,9 +44,11 @@ type RepositoryReport struct {
 	States []string `json:"states"`
 	// Head is the checked-out branch and commit, null if unknown.
 	Head *HeadReport `json:"head"`
-	// Operation is "none" or the operation in progress, such as "merging".
-	Operation *string       `json:"operation"`
-	Counts    *CountsReport `json:"counts"`
+	// Worktree is the state of the worktree, null if unknown.
+	Worktree *WorktreeReport `json:"worktree"`
+	// Stashes is the number of stash entries of the repository store, null
+	// if unknown.
+	Stashes *int `json:"stashes"`
 	// Branches lists the other local branches that need attention, in the
 	// order of the detail panel; null if their state is unknown or not read.
 	Branches  []BranchReport `json:"branches"`
@@ -58,15 +60,18 @@ type RepositoryReport struct {
 	Error *string      `json:"error"`
 }
 
-type CountsReport struct {
-	Staged    int `json:"staged"`
-	Modified  int `json:"modified"`
-	Deleted   int `json:"deleted"`
-	Renamed   int `json:"renamed"`
-	Conflicts int `json:"conflicts"`
+// WorktreeReport is the operation in progress and the changed entries of a
+// worktree. Operation is "none" or the operation in progress, null if
+// unknown.
+type WorktreeReport struct {
+	Operation *string `json:"operation"`
+	Staged    int     `json:"staged"`
+	Modified  int     `json:"modified"`
+	Deleted   int     `json:"deleted"`
+	Renamed   int     `json:"renamed"`
+	Conflicts int     `json:"conflicts"`
 	// Untracked is null if untracked files are not checked.
 	Untracked *int `json:"untracked"`
-	Stashed   *int `json:"stashed"`
 }
 
 // HeadReport is the state of HEAD. State is "attached", "detached", or
@@ -211,19 +216,19 @@ func repositoryReport(s *Status, r *domain.Repository) RepositoryReport {
 		}
 		rr.Head = hr
 	}
-	if r.Operation.Valid {
-		rr.Operation = ptr(operationValue(r.Operation.Value))
-	}
 	if r.Worktree.Valid {
 		w := r.Worktree.Value
-		c := &CountsReport{Staged: w.Staged, Modified: w.Modified, Deleted: w.Deleted, Renamed: w.Renamed, Conflicts: w.Conflicts}
+		wr := &WorktreeReport{Staged: w.Staged, Modified: w.Modified, Deleted: w.Deleted, Renamed: w.Renamed, Conflicts: w.Conflicts}
+		if r.Operation.Valid {
+			wr.Operation = ptr(operationValue(r.Operation.Value))
+		}
 		if w.UntrackedChecked {
-			c.Untracked = ptr(w.Untracked)
+			wr.Untracked = ptr(w.Untracked)
 		}
-		if r.Stashes.Valid {
-			c.Stashed = ptr(r.Stashes.Value)
-		}
-		rr.Counts = c
+		rr.Worktree = wr
+	}
+	if r.Stashes.Valid {
+		rr.Stashes = ptr(r.Stashes.Value)
 	}
 	if r.Branches.Valid {
 		rr.Branches = make([]BranchReport, 0, len(r.Branches.Value))
