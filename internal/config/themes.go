@@ -93,7 +93,21 @@ var ThemePresets = map[string]Theme{
 	},
 }
 
-// ThemePresetNames returns the preset names in alphabetical order.
+// ThemeVariants names the presets of a theme family for dark and light
+// terminal backgrounds.
+type ThemeVariants struct{ Dark, Light string }
+
+// ThemeFamilies are the preset names that select a variant by the terminal
+// background.
+var ThemeFamilies = map[string]ThemeVariants{
+	"catppuccin": {Dark: "catppuccin-mocha", Light: "catppuccin-latte"},
+	"gruvbox":    {Dark: "gruvbox-dark", Light: "gruvbox-light"},
+}
+
+// ThemePresetNames returns the preset and family names in alphabetical
+// order.
 func ThemePresetNames() []string {
-	return slices.Sorted(maps.Keys(ThemePresets))
+	names := slices.AppendSeq(slices.Collect(maps.Keys(ThemePresets)), maps.Keys(ThemeFamilies))
+	slices.Sort(names)
+	return names
 }

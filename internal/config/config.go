@@ -87,7 +87,20 @@ type UI struct {
 	// IncomingCommits is the number of incoming upstream commits listed in
 	// the detail panel, the update confirmation, and the operations view.
 	IncomingCommits int
-	Theme           Theme
+	// Theme is the theme for dark backgrounds, and for light ones unless
+	// LightTheme is set.
+	Theme Theme
+	// LightTheme is the theme for light backgrounds if the preset is a
+	// theme family; nil otherwise.
+	LightTheme *Theme
+}
+
+// ThemeFor returns the theme for a dark or light terminal background.
+func (u UI) ThemeFor(dark bool) Theme {
+	if !dark && u.LightTheme != nil {
+		return *u.LightTheme
+	}
+	return u.Theme
 }
 
 // SortOrders names the sort orders of [ui].sort, in the order of the sort
