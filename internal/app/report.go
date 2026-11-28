@@ -32,10 +32,11 @@ type Summary struct {
 
 // RepositoryReport is the state of one repository.
 type RepositoryReport struct {
-	Name         string `json:"name"`
-	Path         string `json:"path"`
-	Family       string `json:"family"`
-	Availability string `json:"availability"`
+	Name string `json:"name"`
+	Path string `json:"path"`
+	// Family is null for the repositories without a family.
+	Family       *string `json:"family"`
+	Availability string  `json:"availability"`
 	// Known reports whether the inspection determined the complete state.
 	Known  bool   `json:"known"`
 	Health string `json:"health"`
@@ -180,11 +181,13 @@ func repositoryReport(s *Status, r *domain.Repository) RepositoryReport {
 	rr := RepositoryReport{
 		Name:         clean(r.Name),
 		Path:         clean(r.Path),
-		Family:       clean(string(r.Family)),
 		Availability: availabilityValue(r.Availability),
 		Known:        Known(r),
 		Health:       s.Health(r).String(),
 		States:       []string{},
+	}
+	if r.Family != domain.UngroupedFamily {
+		rr.Family = ptr(clean(string(r.Family)))
 	}
 	for _, name := range StatusStates() {
 		if s.Is(r, name) {
