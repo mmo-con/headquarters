@@ -1,6 +1,6 @@
 # ADR 0018: Deleting merged branches
 
-Status: Accepted, amended by [ADR 0019](0019-deleting-squash-and-rebase-merged-branches.md)
+Status: Accepted, amended by [ADR 0019](0019-deleting-squash-and-rebase-merged-branches.md),
 [ADR 0022](0022-keeping-branches-that-exist-on-the-server.md), and
 [ADR 0023](0023-fetch-hint-in-the-branch-cleanup.md)
 
