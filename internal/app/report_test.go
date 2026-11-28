@@ -7,6 +7,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 	"time"
 
@@ -171,5 +172,26 @@ func TestReportTimesHaveWholeSeconds(t *testing.T) {
 		if got == nil || !got.Equal(want) || got.Location() != time.UTC {
 			t.Errorf("%s = %v, want %v", name, got, want)
 		}
+	}
+}
+
+func TestReportStatesAndHealthUseTheSameTime(t *testing.T) {
+	// Five days before the time of the status, so its fetch is not stale
+	// then, but long before the time the test runs.
+	now := time.Date(2020, 1, 10, 12, 0, 0, 0, time.UTC)
+	fetched := now.Add(-5 * 24 * time.Hour)
+	r := domain.Repository{Name: "r", Inspected: domain.InspectionInfo{Generation: 1, FinishedAt: now}}
+	r.Head = domain.KnownValue(domain.HeadState{Branch: "main"})
+	r.Operation = domain.KnownValue(domain.NoOperation)
+	r.Worktree = domain.KnownValue(domain.WorktreeState{UntrackedChecked: true})
+	r.Upstream = domain.KnownValue(domain.UpstreamState{Configured: true, Ref: "origin/main"})
+	r.Stashes = domain.KnownValue(0)
+	r.Remotes = domain.KnownValue([]domain.Remote{{Name: "origin", URL: "https://example.com/r.git"}})
+	r.LastFetch = domain.KnownValue(&fetched)
+	s := reportStatus(r)
+	s.now = now
+	rr := NewReport(s, now).Repositories[0]
+	if rr.Health != "ok" || slices.Contains(rr.States, "stale") {
+		t.Errorf("health = %s, states = %v, want ok and not stale", rr.Health, rr.States)
 	}
 }

@@ -74,6 +74,7 @@ func Known(r *domain.Repository) bool {
 // Is reports whether r is in a state of StatusStates: "unknown" means that
 // the state is not completely known (see Known), "error" also matches a
 // failed fetch, and every other state matches like its "is:" filter token.
+// All states use the time of the status, like Health.
 func (s *Status) Is(r *domain.Repository, state string) bool {
 	switch state {
 	case "unknown":
@@ -83,7 +84,7 @@ func (s *Status) Is(r *domain.Repository, state string) bool {
 			return true
 		}
 	}
-	return Filter{Text: "is:" + state}.Matches(r, false)
+	return Filter{Text: "is:" + state, Now: s.now}.Matches(r, false)
 }
 
 // CollectStatus loads the inventory, inspects every available entry, and
@@ -142,7 +143,9 @@ func (a *Application) CollectStatus(ctx context.Context, opts StatusOptions) Sta
 	}
 
 	st.now = time.Now()
-	sel := selectRepos(repos, opts.Filter)
+	final := opts.Filter
+	final.Now = st.now
+	sel := selectRepos(repos, final)
 	ptrs := make([]*domain.Repository, len(sel))
 	for i := range sel {
 		ptrs[i] = &sel[i]

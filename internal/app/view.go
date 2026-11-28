@@ -15,6 +15,9 @@ import (
 type Filter struct {
 	Text   string
 	Family domain.FamilyID // empty means all families
+	// Now is the time against which is:stale is evaluated; zero means the
+	// current time.
+	Now time.Time
 }
 
 // StateKeywords lists the supported "is:" filter tokens.
@@ -34,7 +37,7 @@ func (f Filter) Matches(r *domain.Repository, marked bool) bool {
 	}
 	for _, tok := range strings.Fields(strings.ToLower(f.Text)) {
 		if strings.HasPrefix(tok, "is:") {
-			if !matchState(tok, r, marked) {
+			if !f.matchState(tok, r, marked) {
 				return false
 			}
 			continue
@@ -52,7 +55,7 @@ func (f Filter) Matches(r *domain.Repository, marked bool) bool {
 	return true
 }
 
-func matchState(tok string, r *domain.Repository, marked bool) bool {
+func (f Filter) matchState(tok string, r *domain.Repository, marked bool) bool {
 	w, u := r.Worktree, r.Upstream
 	switch tok {
 	case "is:dirty":
@@ -82,7 +85,11 @@ func matchState(tok string, r *domain.Repository, marked bool) bool {
 	case "is:stashed":
 		return r.Stashes.Valid && r.Stashes.Value > 0
 	case "is:stale":
-		return r.FetchStale(time.Now())
+		now := f.Now
+		if now.IsZero() {
+			now = time.Now()
+		}
+		return r.FetchStale(now)
 	}
 	return false
 }
