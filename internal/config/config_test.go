@@ -201,6 +201,19 @@ func TestThemePresets(t *testing.T) {
 	}
 }
 
+func TestOneDarkAndMonokaiPresets(t *testing.T) {
+	for _, name := range []string{"onedark", "monokai"} {
+		cfg, err := Parse([]byte("version = 1\n[ui.theme]\npreset = \""+name+"\"\n"), "/x", env(nil))
+		if err != nil {
+			t.Errorf("preset %s: %v", name, err)
+			continue
+		}
+		if cfg.UI.Theme == DefaultTheme() {
+			t.Errorf("preset %s must not be the default theme", name)
+		}
+	}
+}
+
 func TestBranchesSettings(t *testing.T) {
 	cfg, err := Parse([]byte("version = 1\n[[repositories]]\npath = \"/a\"\n"), "/x", env(nil))
 	if err != nil {

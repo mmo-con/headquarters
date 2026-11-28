@@ -88,8 +88,9 @@ incoming_commits = 10
 # Colors: ANSI names (green, bright-blue, gray, …), numbers 0-255, or #rrggbb.
 # Unset keys keep their defaults. NO_COLOR disables all colors.
 # preset selects a built-in scheme: default, high-contrast, low-color,
-# monochrome, catppuccin-mocha, catppuccin-latte, dracula, gruvbox-dark, or
-# gruvbox-light; the keys below override single colors of the preset.
+# monochrome, catppuccin-mocha, catppuccin-latte, dracula, gruvbox-dark,
+# gruvbox-light, monokai, or onedark; the keys below override single colors
+# of the preset.
 [ui.theme]
 preset = "default"
 active_border = "green"

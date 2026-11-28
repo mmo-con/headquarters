@@ -59,6 +59,22 @@ var ThemePresets = map[string]Theme{
 		Ahead: "#50fa7b", Behind: "#ff79c6", Success: "#50fa7b",
 		Error: "#ff5555", Warning: "#ffb86c", Dim: "#6272a4",
 	},
+	"onedark": {
+		ActiveBorder: "#61afef", InactiveBorder: "#5c6370", Title: "#c678dd",
+		SelectedBackground: "#3e4451", SelectedForeground: "#dcdfe4", SelectedAccent: "#c678dd",
+		HeaderBackground: "#61afef", HeaderForeground: "#282c34",
+		Key: "#56b6c2", Branch: "#61afef", Clean: "#7f848e", Dirty: "#e5c07b",
+		Ahead: "#98c379", Behind: "#c678dd", Success: "#98c379",
+		Error: "#e06c75", Warning: "#d19a66", Dim: "#7f848e",
+	},
+	"monokai": {
+		ActiveBorder: "#a6e22e", InactiveBorder: "#75715e", Title: "#a6e22e",
+		SelectedBackground: "#49483e", SelectedForeground: "#f8f8f2", SelectedAccent: "#ae81ff",
+		HeaderBackground: "#66d9ef", HeaderForeground: "#272822",
+		Key: "#66d9ef", Branch: "#66d9ef", Clean: "#75715e", Dirty: "#e6db74",
+		Ahead: "#a6e22e", Behind: "#ae81ff", Success: "#a6e22e",
+		Error: "#f92672", Warning: "#fd971f", Dim: "#75715e",
+	},
 	"gruvbox-dark": {
 		ActiveBorder: "#83a598", InactiveBorder: "#665c54", Title: "#fe8019",
 		SelectedBackground: "#504945", SelectedForeground: "#ebdbb2", SelectedAccent: "#fabd2f",
