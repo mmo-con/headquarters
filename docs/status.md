@@ -97,8 +97,14 @@ own `schema` field; there is no `generated_at` and no `summary`.
   state, and per `health` level.
 - `health` is the level of the dashboard's health column: `error`,
   `critical`, `dirty`, `behind`, `ahead`, `attention`, `ok`, or `unknown`.
+- `availability` is `available`, `missing`, `not_a_repository`,
+  `not_worktree_root`, `bare`, `untrusted_owner`, or `validation_failed`.
 - `head` is `attached`, `detached`, or `unborn`; `operation` is `none` or the
-  operation in progress, such as `merging` or `rebasing`.
+  operation in progress: `merging`, `rebasing`, `cherry_picking`,
+  `reverting`, or `bisecting`.
+- Values are stable identifiers, not display text. Values taken from the
+  filter language, such as the `--fail-on` states, are spelled as there;
+  all others use snake_case.
 - Unknown state is `null`, and `known` is `false` if any part of the state
   could not be determined; an unknown repository is never reported as clean
   or up to date. `counts.untracked` is `null` when untracked files are not

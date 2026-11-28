@@ -174,7 +174,7 @@ func repositoryReport(s *Status, r *domain.Repository) RepositoryReport {
 		Name:         clean(r.Name),
 		Path:         clean(r.Path),
 		Family:       clean(string(r.Family)),
-		Availability: r.Availability.String(),
+		Availability: availabilityValue(r.Availability),
 		Known:        Known(r),
 		Health:       s.Health(r).String(),
 	}
@@ -193,11 +193,7 @@ func repositoryReport(s *Status, r *domain.Repository) RepositoryReport {
 		}
 	}
 	if r.Operation.Valid {
-		op := "none"
-		if r.Operation.Value != domain.NoOperation {
-			op = r.Operation.Value.String()
-		}
-		rr.Operation = &op
+		rr.Operation = ptr(operationValue(r.Operation.Value))
 	}
 	if r.Worktree.Valid {
 		w := r.Worktree.Value
@@ -259,6 +255,37 @@ func repositoryReport(s *Status, r *domain.Repository) RepositoryReport {
 		rr.Error = ptr(strings.Join(errs, "; "))
 	}
 	return rr
+}
+
+// availabilityValue is the report value of a. The report has its own
+// values, so that changing the text of the user interface keeps the format.
+func availabilityValue(a domain.Availability) string {
+	switch a {
+	case domain.Available:
+		return "available"
+	case domain.Missing:
+		return "missing"
+	case domain.NotARepository:
+		return "not_a_repository"
+	case domain.NotWorktreeRoot:
+		return "not_worktree_root"
+	case domain.BareRepository:
+		return "bare"
+	case domain.UntrustedOwner:
+		return "untrusted_owner"
+	case domain.ValidationFailed:
+		return "validation_failed"
+	}
+	return "unknown"
+}
+
+// operationValue is the report value of o: "none" or the operation in
+// progress in snake_case.
+func operationValue(o domain.OperationInProgress) string {
+	if o == domain.NoOperation {
+		return "none"
+	}
+	return strings.ReplaceAll(o.String(), "-", "_")
 }
 
 func ptr[T any](v T) *T { return &v }
