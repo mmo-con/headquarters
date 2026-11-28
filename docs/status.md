@@ -70,9 +70,9 @@ field is renamed, removed, or changes its meaning:
       "head": {
         "state": "attached",
         "branch": "main",
-        "commit": { "hash": "abc1234…", "short_hash": "abc1234",
+        "commit": { "hash": "3077302d4c1e…", "short_hash": "3077302",
                     "author": "Jane Doe",
-                    "subject": "tui: group the operations view by status",
+                    "subject": "docs: streamline README",
                     "time": "2026-11-22T20:41:00Z" },
         "upstream": { "name": "origin/main", "gone": false, "ahead": 0, "behind": 3 }
       },
@@ -93,6 +93,11 @@ field is renamed, removed, or changes its meaning:
 }
 ```
 
+The complete report of a dirty repository with other branches, a detached
+one whose fetch failed, and a missing one is
+[`internal/app/testdata/status.golden.json`](../internal/app/testdata/status.golden.json);
+a test keeps it identical to the output.
+
 With `--format ndjson`, each line is one entry of `repositories` with its
 own `schema` field; there is no `generated_at` and no `summary`.
 
@@ -110,7 +115,10 @@ own `schema` field; there is no `generated_at` and no `summary`.
   `not_worktree_root`, `bare`, `untrusted_owner`, or `validation_failed`.
 - `head` describes the checked-out branch: `state` is `attached`,
   `detached`, or `unborn`; `branch` is `null` when HEAD is detached, and
-  `commit` is `null` when it is unborn.
+  `commit` is `null` when it is unborn. `commit.short_hash` is the
+  abbreviation that Git prints for the commit, a unique prefix whose length
+  depends on the size of the repository and `core.abbrev`; it is not the
+  first seven characters of `hash`.
 - `upstream`, in `head` and in each entry of `branches`, has the same
   fields: `name` is `null` when no upstream is configured, `gone` reports an
   upstream that no longer exists, and `ahead` and `behind` are `null` unless

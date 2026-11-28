@@ -1,0 +1,203 @@
+{
+  "schema": 1,
+  "generated_at": "2026-11-23T17:00:00Z",
+  "summary": {
+    "total": 3,
+    "states": {
+      "ahead": 0,
+      "behind": 1,
+      "branches": 1,
+      "clean": 0,
+      "dirty": 2,
+      "diverged": 0,
+      "error": 2,
+      "mismatch": 0,
+      "noupstream": 1,
+      "stale": 2,
+      "stashed": 1,
+      "unavailable": 1,
+      "unknown": 1,
+      "unpublished": 1
+    },
+    "health": {
+      "ahead": 0,
+      "attention": 0,
+      "behind": 0,
+      "critical": 0,
+      "dirty": 1,
+      "error": 2,
+      "ok": 0,
+      "unknown": 0
+    }
+  },
+  "repositories": [
+    {
+      "name": "headquarters",
+      "path": "/home/me/src/headquarters",
+      "family": "mmo-con",
+      "availability": "available",
+      "known": true,
+      "health": "dirty",
+      "states": [
+        "dirty",
+        "behind",
+        "branches",
+        "unpublished",
+        "stashed",
+        "stale"
+      ],
+      "head": {
+        "state": "attached",
+        "branch": "main",
+        "commit": {
+          "hash": "3077302d4c1e0b6f1a2b3c4d5e6f708192a3b4c5",
+          "short_hash": "3077302",
+          "author": "Jane Doe",
+          "subject": "docs: streamline README",
+          "time": "2026-11-22T20:41:00Z"
+        },
+        "upstream": {
+          "name": "origin/main",
+          "gone": false,
+          "ahead": 0,
+          "behind": 3
+        }
+      },
+      "worktree": {
+        "operation": "none",
+        "staged": 0,
+        "modified": 2,
+        "deleted": 0,
+        "renamed": 0,
+        "conflicts": 0,
+        "untracked": 1
+      },
+      "stashes": 1,
+      "branches": [
+        {
+          "name": "release",
+          "state": "behind",
+          "pinned": true,
+          "upstream": {
+            "name": "origin/release",
+            "gone": false,
+            "ahead": 0,
+            "behind": 2
+          },
+          "commit_time": "2026-11-20T09:30:00Z"
+        },
+        {
+          "name": "stable",
+          "state": "missing",
+          "pinned": true,
+          "upstream": null,
+          "commit_time": null
+        },
+        {
+          "name": "feature/x",
+          "state": "gone",
+          "pinned": false,
+          "upstream": {
+            "name": "origin/feature/x",
+            "gone": true,
+            "ahead": null,
+            "behind": null
+          },
+          "commit_time": "2026-11-19T10:00:00Z"
+        },
+        {
+          "name": "spike",
+          "state": "noupstream",
+          "pinned": false,
+          "upstream": {
+            "name": null,
+            "gone": false,
+            "ahead": null,
+            "behind": null
+          },
+          "commit_time": "2026-11-18T11:00:00Z"
+        }
+      ],
+      "remote": {
+        "name": "origin",
+        "url": "https://***@github.com/mmo-con/headquarters.git"
+      },
+      "last_fetch": "2026-10-01T08:12:00Z",
+      "fetch_result": null,
+      "error": null
+    },
+    {
+      "name": "notes",
+      "path": "/home/me/notes",
+      "family": null,
+      "availability": "available",
+      "known": true,
+      "health": "error",
+      "states": [
+        "dirty",
+        "noupstream",
+        "error",
+        "stale"
+      ],
+      "head": {
+        "state": "detached",
+        "branch": null,
+        "commit": {
+          "hash": "9ebb42d0a1b2c3d4e5f60718293a4b5c6d7e8f90",
+          "short_hash": "9ebb42d",
+          "author": "Jane Doe",
+          "subject": "wip",
+          "time": "2026-11-21T12:00:00Z"
+        },
+        "upstream": {
+          "name": null,
+          "gone": false,
+          "ahead": null,
+          "behind": null
+        }
+      },
+      "worktree": {
+        "operation": "rebasing",
+        "staged": 0,
+        "modified": 0,
+        "deleted": 0,
+        "renamed": 0,
+        "conflicts": 1,
+        "untracked": null
+      },
+      "stashes": 0,
+      "branches": [],
+      "remote": {
+        "name": "origin",
+        "url": "https://example.com/notes.git"
+      },
+      "last_fetch": null,
+      "fetch_result": {
+        "status": "failed",
+        "error": "git exited with status 128: fatal: repository not found"
+      },
+      "error": null
+    },
+    {
+      "name": "old",
+      "path": "/home/me/old",
+      "family": "archive",
+      "availability": "missing",
+      "known": false,
+      "health": "error",
+      "states": [
+        "error",
+        "unavailable",
+        "unknown"
+      ],
+      "head": null,
+      "worktree": null,
+      "stashes": null,
+      "branches": null,
+      "remote": null,
+      "last_fetch": null,
+      "fetch_result": null,
+      "error": "stat /home/me/old: no such file or directory"
+    }
+  ]
+}
