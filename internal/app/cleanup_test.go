@@ -62,9 +62,20 @@ func TestPlanCleanup(t *testing.T) {
 			b.Upstream, b.Gone = "origin/a", true
 			return b
 		}(), "delete"},
-		{"merged into its existing upstream", func() git.CleanupBranch {
+		{"merged, upstream still exists", func() git.CleanupBranch {
 			b := merged("a")
-			b.Upstream, b.MergedHead = "origin/a", false
+			b.Upstream = "origin/a"
+			return b
+		}(), "upstream origin/a still exists"},
+		{"at the default commit, upstream still exists", func() git.CleanupBranch {
+			b := merged("a")
+			b.Upstream, b.CommitID = "origin/a", "d0"
+			return b
+		}(), "upstream origin/a still exists"},
+		{"at the default commit, upstream gone", func() git.CleanupBranch {
+			// For example after a fast-forward merge on the server.
+			b := merged("a")
+			b.Upstream, b.Gone, b.CommitID = "origin/a", true, "d0"
 			return b
 		}(), "delete"},
 		{"checked out here", func() git.CleanupBranch { b := merged("a"); b.Worktree = "/w/r"; return b }(), "checked out"},

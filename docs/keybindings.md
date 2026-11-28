@@ -151,7 +151,8 @@ the next update is skipped with
 The confirmation opens at once and reads the local branches of every
 target without network access; it can be confirmed once they are read. It
 lists the branches whose changes are all in the default branch, the target
-of `refs/remotes/<remote>/HEAD` of the primary remote. Merged branches are
+of `refs/remotes/<remote>/HEAD` of the primary remote, and whose upstream
+is gone or that have none. Merged branches are
 deleted with `git branch -d`, never `-D`. Branches whose upstream is gone
 are also deleted after a squash or rebase merge, if merging them into the
 default branch would change nothing (Git 2.38 or newer); they are deleted
@@ -168,6 +169,7 @@ with the reason:
 | `upstream gone; squash check needs Git 2.38` | not merged by ancestry; detecting squash and rebase merges needs Git 2.38 |
 | `rebase in progress; finish it first`, `bisect in progress; finish it first` | upstream gone and deleted without `git branch -d`, while a rebase or bisect runs in a worktree of the repository; finish or abort it and press `d` again |
 | `has commits not pushed to …` | ahead of its upstream |
+| `upstream … still exists` | merged, but its upstream still exists on the server, for example `develop` or a release branch; it is deleted once its upstream is gone |
 | `… update <branch> first` | without upstream, merged into the default branch, but not yet into HEAD, which `git branch -d` requires; a safe update fixes it |
 | `no commits of its own` | without upstream and at the commit of the default branch, for example just created |
 

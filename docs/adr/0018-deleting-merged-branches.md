@@ -1,6 +1,7 @@
 # ADR 0018: Deleting merged branches
 
 Status: Accepted, amended by [ADR 0019](0019-deleting-squash-and-rebase-merged-branches.md)
+and [ADR 0022](0022-keeping-branches-that-exist-on-the-server.md)
 
 ## Context
 
@@ -50,8 +51,10 @@ upstream if that exists, otherwise into HEAD of the worktree that runs the
 deletion. [ADR 0019](0019-deleting-squash-and-rebase-merged-branches.md)
 also deletes branches with a gone upstream whose changes are all in the
 default branch, after a squash or rebase merge, or by ancestry but not in
-HEAD. The preview lists, with a reason, branches that are merged or
-whose upstream is gone but are not deleted:
+HEAD. [ADR 0022](0022-keeping-branches-that-exist-on-the-server.md)
+keeps every branch whose upstream still exists. The preview lists, with a
+reason, branches that are merged or whose upstream is gone but are not
+deleted:
 
 | Reason | Condition |
 |---|---|
@@ -59,6 +62,7 @@ whose upstream is gone but are not deleted:
 | pinned | named in the pinned branches of any entry of the store |
 | not merged | upstream gone but changes not in the default branch ([ADR 0019](0019-deleting-squash-and-rebase-merged-branches.md)) |
 | unpushed commits | ahead of its existing upstream |
+| upstream still exists | merged, upstream exists ([ADR 0022](0022-keeping-branches-that-exist-on-the-server.md)) |
 | update first | without a usable upstream and not merged into HEAD |
 | no commits of its own | without upstream and at the commit of the default branch, for example just created |
 

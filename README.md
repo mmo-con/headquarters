@@ -87,7 +87,8 @@ The architecture and the decisions behind it are documented in
   repositories in lazygit, see which blockers are resolved, and continue.
 - Delete merged local branches across repositories after a preview: only
   branches whose changes are all in the default branch, also after squash
-  and rebase merges, and every kept branch is listed with the reason.
+  and rebase merges, and that no longer exist on the server; every kept
+  branch is listed with the reason.
 - `headquarters status` prints the same status, filter results, and health as
   JSON for scripts and status bars, with an exit status for checks such as
   "nothing uncommitted before shutdown". It only reads, unless `--fetch` is

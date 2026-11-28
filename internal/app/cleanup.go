@@ -105,9 +105,13 @@ func PlanCleanup(r domain.Repository, st git.BranchCleanup) []CleanupCandidate {
 			c.RefDelete = !b.MergedDefault || !b.MergedHead
 		case b.Upstream != "" && b.Ahead > 0:
 			c.Reason = "has commits not pushed to " + b.Upstream
-		case b.Upstream == "" && b.CommitID == st.DefaultID:
+		case b.Upstream != "":
+			// A branch that still exists on the server, such as develop or
+			// a release branch, is in use even if it is merged.
+			c.Reason = "upstream " + b.Upstream + " still exists"
+		case b.CommitID == st.DefaultID:
 			c.Reason = "no commits of its own"
-		case b.Upstream == "" && !b.MergedHead:
+		case !b.MergedHead:
 			c.Reason = "merged into " + def + " but not into " + head + "; update " + head + " first"
 		}
 		if c.Reason == "" {

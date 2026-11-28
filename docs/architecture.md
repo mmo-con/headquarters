@@ -54,6 +54,7 @@ The [ADR index](adr/README.md) explains how the records are maintained.
 | Deleting squash- and rebase-merged branches | [ADR 0019](adr/0019-deleting-squash-and-rebase-merged-branches.md) |
 | Branches of rebases and bisects | [ADR 0020](adr/0020-branches-of-rebases-and-bisects.md) |
 | Untrusted repository configuration | [ADR 0021](adr/0021-untrusted-repository-configuration.md) |
+| Keeping branches that exist on the server | [ADR 0022](adr/0022-keeping-branches-that-exist-on-the-server.md) |
 
 User-facing configuration and keys are documented in
 [configuration.md](configuration.md) and [keybindings.md](keybindings.md).
