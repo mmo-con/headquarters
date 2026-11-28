@@ -37,9 +37,12 @@ type RepositoryReport struct {
 	Family       string `json:"family"`
 	Availability string `json:"availability"`
 	// Known reports whether the inspection determined the complete state.
-	Known  bool    `json:"known"`
-	Health string  `json:"health"`
-	Branch *string `json:"branch"`
+	Known  bool   `json:"known"`
+	Health string `json:"health"`
+	// States lists the states of StatusStates that r is in, in that order;
+	// it contains "unknown" exactly when Known is false.
+	States []string `json:"states"`
+	Branch *string  `json:"branch"`
 	// Head is "attached", "detached", or "unborn".
 	Head *string `json:"head"`
 	// Operation is "none" or the operation in progress, such as "merging".
@@ -147,12 +150,10 @@ func NewReport(s *Status, now time.Time) Report {
 	for i := range s.Repositories {
 		r := &s.Repositories[i]
 		rep.Summary.Total++
-		for _, name := range StatusStates() {
-			if s.Is(r, name) {
-				rep.Summary.States[name]++
-			}
-		}
 		rr := repositoryReport(s, r)
+		for _, name := range rr.States {
+			rep.Summary.States[name]++
+		}
 		rep.Summary.Health[rr.Health]++
 		rep.Repositories = append(rep.Repositories, rr)
 	}
@@ -167,6 +168,12 @@ func repositoryReport(s *Status, r *domain.Repository) RepositoryReport {
 		Availability: availabilityValue(r.Availability),
 		Known:        Known(r),
 		Health:       s.Health(r).String(),
+		States:       []string{},
+	}
+	for _, name := range StatusStates() {
+		if s.Is(r, name) {
+			rr.States = append(rr.States, name)
+		}
 	}
 	if r.Head.Valid {
 		h := r.Head.Value

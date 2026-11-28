@@ -3,9 +3,11 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -425,6 +427,57 @@ func TestStatusSummaryNestsStateCounts(t *testing.T) {
 	}
 	if h, _ := doc.Summary["health"].(map[string]any); h["error"] != 1.0 {
 		t.Errorf("summary.health = %v", h)
+	}
+}
+
+func states(r map[string]any) string {
+	list, ok := r["states"].([]any)
+	if !ok {
+		return fmt.Sprintf("%#v", r["states"])
+	}
+	var out []string
+	for _, s := range list {
+		out = append(out, s.(string))
+	}
+	return strings.Join(out, " ")
+}
+
+func TestStatusListsStatesOfEachRepository(t *testing.T) {
+	config, _, _ := statusRepos(t)
+	doc := statusJSON(t, 0, "--config", config)
+	for name, want := range map[string]string{
+		// in the order of app.StatusStates
+		"clean":   "clean stale",
+		"dirty":   "dirty noupstream",
+		"missing": "error unavailable unknown",
+	} {
+		if got := states(entry(t, doc, name)); got != want {
+			t.Errorf("%s.states = %s, want %s", name, got, want)
+		}
+	}
+}
+
+func TestStatusStatesIncludeFailedFetch(t *testing.T) {
+	config, _, _ := statusRepos(t)
+	doc := statusJSON(t, 0, "--config", config, "--fetch", "--filter", "family:personal")
+	if got := states(entry(t, doc, "notes")); !slices.Contains(strings.Fields(got), "error") {
+		t.Errorf("notes.states = %s, want error after a failed fetch", got)
+	}
+}
+
+func TestStatusSummaryCountsListedStates(t *testing.T) {
+	config, _, _ := statusRepos(t)
+	doc := statusJSON(t, 0, "--config", config)
+	count := map[string]float64{}
+	for _, r := range doc.Repositories {
+		for _, s := range strings.Fields(states(r)) {
+			count[s]++
+		}
+	}
+	for s, n := range doc.Summary["states"].(map[string]any) {
+		if n != count[s] {
+			t.Errorf("summary.states.%s = %v, but %v entries list it", s, n, count[s])
+		}
 	}
 }
 
