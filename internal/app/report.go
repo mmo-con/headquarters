@@ -42,19 +42,16 @@ type RepositoryReport struct {
 	// States lists the states of StatusStates that r is in, in that order;
 	// it contains "unknown" exactly when Known is false.
 	States []string `json:"states"`
-	Branch *string  `json:"branch"`
-	// Head is "attached", "detached", or "unborn".
-	Head *string `json:"head"`
+	// Head is the checked-out branch and commit, null if unknown.
+	Head *HeadReport `json:"head"`
 	// Operation is "none" or the operation in progress, such as "merging".
-	Operation *string         `json:"operation"`
-	Counts    *CountsReport   `json:"counts"`
-	Upstream  *UpstreamReport `json:"upstream"`
+	Operation *string       `json:"operation"`
+	Counts    *CountsReport `json:"counts"`
 	// Branches lists the other local branches that need attention, in the
 	// order of the detail panel; null if their state is unknown or not read.
-	Branches   []BranchReport `json:"branches"`
-	Remote     *RemoteReport  `json:"remote"`
-	LastFetch  *time.Time     `json:"last_fetch"`
-	LastCommit *CommitReport  `json:"last_commit"`
+	Branches  []BranchReport `json:"branches"`
+	Remote    *RemoteReport  `json:"remote"`
+	LastFetch *time.Time     `json:"last_fetch"`
 	// Fetch is the result of the fetch, null if the repository was not
 	// fetched.
 	Fetch *FetchReport `json:"fetch"`
@@ -72,29 +69,46 @@ type CountsReport struct {
 	Stashed   *int `json:"stashed"`
 }
 
-// UpstreamReport is the upstream of the checked-out branch. Ahead and
-// Behind are null unless the upstream exists, so that 0 always means a
-// known zero.
+// HeadReport is the state of HEAD. State is "attached", "detached", or
+// "unborn"; Branch is null if HEAD is detached, Commit is null if it is
+// unborn, and Upstream is null if the upstream state is unknown.
+type HeadReport struct {
+	State    string          `json:"state"`
+	Branch   *string         `json:"branch"`
+	Commit   *CommitReport   `json:"commit"`
+	Upstream *UpstreamReport `json:"upstream"`
+}
+
+// UpstreamReport is the upstream of a branch. Name is null if no upstream
+// is configured. Ahead and Behind are null unless the upstream exists, so
+// that 0 always means a known zero.
 type UpstreamReport struct {
-	Name       *string `json:"name"`
-	Configured bool    `json:"configured"`
-	Gone       bool    `json:"gone"`
-	Ahead      *int    `json:"ahead"`
-	Behind     *int    `json:"behind"`
+	Name   *string `json:"name"`
+	Gone   bool    `json:"gone"`
+	Ahead  *int    `json:"ahead"`
+	Behind *int    `json:"behind"`
+}
+
+func upstreamReport(name string, gone bool, ahead, behind int) *UpstreamReport {
+	u := &UpstreamReport{Gone: gone}
+	if name != "" {
+		u.Name = ptr(clean(name))
+		if !gone {
+			u.Ahead, u.Behind = ptr(ahead), ptr(behind)
+		}
+	}
+	return u
 }
 
 // BranchReport is a local branch other than the checked-out one that needs
-// attention. State is a domain.BranchReason. Upstream is null without an
-// upstream, Ahead and Behind are null unless the upstream exists, and
-// CommitTime is null for a missing pinned branch.
+// attention. State is a domain.BranchReason. Upstream and CommitTime are
+// null for a missing pinned branch.
 type BranchReport struct {
-	Name       string     `json:"name"`
-	State      string     `json:"state"`
-	Pinned     bool       `json:"pinned"`
-	Upstream   *string    `json:"upstream"`
-	Ahead      *int       `json:"ahead"`
-	Behind     *int       `json:"behind"`
-	CommitTime *time.Time `json:"commit_time"`
+	Name       string          `json:"name"`
+	State      string          `json:"state"`
+	Pinned     bool            `json:"pinned"`
+	Upstream   *UpstreamReport `json:"upstream"`
+	CommitTime *time.Time      `json:"commit_time"`
 }
 
 func branchReport(b domain.BranchState) BranchReport {
@@ -103,12 +117,7 @@ func branchReport(b domain.BranchState) BranchReport {
 	if reason == domain.BranchMissing {
 		return br
 	}
-	if b.Upstream != "" {
-		br.Upstream = ptr(clean(b.Upstream))
-		if !b.Gone {
-			br.Ahead, br.Behind = ptr(b.Ahead), ptr(b.Behind)
-		}
-	}
+	br.Upstream = upstreamReport(b.Upstream, b.Gone, b.Ahead, b.Behind)
 	if !b.CommitTime.IsZero() {
 		br.CommitTime = ptr(b.CommitTime.UTC())
 	}
@@ -184,10 +193,23 @@ func repositoryReport(s *Status, r *domain.Repository) RepositoryReport {
 		case h.Unborn:
 			kind = "unborn"
 		}
-		rr.Head = &kind
+		hr := &HeadReport{State: kind}
 		if !h.Detached && h.Branch != "" {
-			rr.Branch = ptr(clean(h.Branch))
+			hr.Branch = ptr(clean(h.Branch))
 		}
+		if r.LastCommit.Valid && r.LastCommit.Value != nil {
+			c := r.LastCommit.Value
+			hr.Commit = &CommitReport{Hash: c.ID, ShortHash: c.ShortID, Author: clean(c.Author), Subject: clean(c.Subject), Time: c.Time.UTC()}
+		}
+		if r.Upstream.Valid {
+			u := r.Upstream.Value
+			ref := ""
+			if u.Configured {
+				ref = u.Ref
+			}
+			hr.Upstream = upstreamReport(ref, u.Gone, u.Ahead, u.Behind)
+		}
+		rr.Head = hr
 	}
 	if r.Operation.Valid {
 		rr.Operation = ptr(operationValue(r.Operation.Value))
@@ -203,17 +225,6 @@ func repositoryReport(s *Status, r *domain.Repository) RepositoryReport {
 		}
 		rr.Counts = c
 	}
-	if r.Upstream.Valid {
-		u := r.Upstream.Value
-		ur := &UpstreamReport{Configured: u.Configured, Gone: u.Gone}
-		if u.Configured && !u.Gone {
-			ur.Ahead, ur.Behind = ptr(u.Ahead), ptr(u.Behind)
-		}
-		if u.Configured && u.Ref != "" {
-			ur.Name = ptr(clean(u.Ref))
-		}
-		rr.Upstream = ur
-	}
 	if r.Branches.Valid {
 		rr.Branches = make([]BranchReport, 0, len(r.Branches.Value))
 		for _, b := range r.Branches.Value {
@@ -226,10 +237,6 @@ func repositoryReport(s *Status, r *domain.Repository) RepositoryReport {
 	if r.LastFetch.Valid && r.LastFetch.Value != nil {
 		t := r.LastFetch.Value.UTC()
 		rr.LastFetch = &t
-	}
-	if r.LastCommit.Valid && r.LastCommit.Value != nil {
-		c := r.LastCommit.Value
-		rr.LastCommit = &CommitReport{Hash: c.ID, ShortHash: c.ShortID, Author: clean(c.Author), Subject: clean(c.Subject), Time: c.Time.UTC()}
 	}
 	var errs []string
 	for _, err := range []error{r.EntryError, r.Inspected.Err} {
