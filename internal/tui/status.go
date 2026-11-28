@@ -267,7 +267,7 @@ func (m *Model) familyHealth() map[domain.FamilyID][]healthLevel {
 	out := map[domain.FamilyID][]healthLevel{}
 	for i := range m.repos {
 		r := &m.repos[i]
-		if m.filter.Matches(r, m.marks[r.ID]) {
+		if m.matches(m.filter, r, m.marks[r.ID]) {
 			out[r.Family] = append(out[r.Family], m.healthOf(r))
 		}
 	}

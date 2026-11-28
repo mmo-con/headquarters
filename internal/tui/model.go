@@ -339,7 +339,7 @@ func (m *Model) recompute() {
 	var list []*domain.Repository
 	for i := range m.repos {
 		r := &m.repos[i]
-		if m.filter.Matches(r, m.marks[r.ID]) {
+		if m.matches(m.filter, r, m.marks[r.ID]) {
 			list = append(list, r)
 		}
 	}
@@ -399,6 +399,13 @@ func (m *Model) moveRepoCursor(to int) {
 
 // filterActive reports whether a text or quick filter is set. It opens the
 // families with matches in the tree.
+// matches reports whether r passes f at the time of the model, the time
+// that also decides the health and the fetch hints.
+func (m *Model) matches(f app.Filter, r *domain.Repository, marked bool) bool {
+	f.Now = m.now()
+	return f.Matches(r, marked)
+}
+
 func (m *Model) filterActive() bool { return strings.TrimSpace(m.filter.Text) != "" }
 
 // isExpanded reports whether a family is expanded in the tree. While a filter
@@ -432,7 +439,7 @@ func (m *Model) familyMembers(f domain.FamilyID) []*domain.Repository {
 	var list []*domain.Repository
 	for i := range m.repos {
 		r := &m.repos[i]
-		if r.Family == f && m.filter.Matches(r, m.marks[r.ID]) {
+		if r.Family == f && m.matches(m.filter, r, m.marks[r.ID]) {
 			list = append(list, r)
 		}
 	}
