@@ -383,20 +383,16 @@ func TestStatusReportsEveryRepository(t *testing.T) {
 	r := entry(t, doc, "clean")
 	for path, want := range map[string]any{
 		"path": clean, "family": "Work", "availability": "available", "known": true,
-		"branch": "main", "head": "attached", "operation": "none",
+		"operation":       "none",
 		"counts.modified": 0.0, "counts.untracked": 0.0, "counts.stashed": 0.0,
-		"upstream.name": "origin/main", "upstream.ahead": 0.0, "upstream.behind": 0.0,
-		"remote.name": "origin", "last_commit.subject": "initial commit", "last_commit.author": "Test",
-		"last_fetch": nil, "fetch": nil, "error": nil,
+		"remote.name": "origin",
+		"last_fetch":  nil, "fetch": nil, "error": nil,
 		// never fetched
 		"health": "attention",
 	} {
 		if got := field(r, path); got != want {
 			t.Errorf("clean.%s = %#v, want %#v", path, got, want)
 		}
-	}
-	if field(r, "last_commit.hash") == nil || field(r, "last_commit.time") == nil {
-		t.Errorf("last commit incomplete: %v", r["last_commit"])
 	}
 	// branches is the only source of the other branches; a separate count
 	// would have to agree with it.
@@ -406,13 +402,87 @@ func TestStatusReportsEveryRepository(t *testing.T) {
 		}
 	}
 	d := entry(t, doc, "dirty")
-	if field(d, "counts.modified") != 1.0 || d["health"] != "dirty" || field(d, "upstream.configured") != false {
+	if field(d, "counts.modified") != 1.0 || d["health"] != "dirty" {
 		t.Errorf("dirty: %v", d)
 	}
-	// Without an upstream, ahead and behind do not apply: null, not zero.
-	if u := d["upstream"].(map[string]any); u["ahead"] != nil || u["behind"] != nil {
-		t.Errorf("dirty.upstream = %v, want ahead and behind null", u)
+}
+
+// wantFields checks the values at dotted paths of r; a nil value must be
+// present as null.
+func wantFields(t *testing.T, name string, r map[string]any, want map[string]any) {
+	t.Helper()
+	for path, v := range want {
+		got := field(r, path)
+		if got == nil && v == nil {
+			parent, key := r, path
+			if i := strings.LastIndex(path, "."); i >= 0 {
+				parent, _ = field(r, path[:i]).(map[string]any)
+				key = path[i+1:]
+			}
+			if _, ok := parent[key]; !ok {
+				t.Errorf("%s.%s is absent, want null", name, path)
+			}
+			continue
+		}
+		if got != v {
+			t.Errorf("%s.%s = %#v, want %#v", name, path, got, v)
+		}
 	}
+}
+
+func wantAbsent(t *testing.T, name string, r map[string]any, keys ...string) {
+	t.Helper()
+	for _, k := range keys {
+		if _, ok := r[k]; ok {
+			t.Errorf("%s.%s must not be reported", name, k)
+		}
+	}
+}
+
+func TestStatusGroupsCheckedOutBranchUnderHead(t *testing.T) {
+	config, _, _ := statusRepos(t)
+	r := entry(t, statusJSON(t, 0, "--config", config), "clean")
+	wantFields(t, "clean", r, map[string]any{
+		"head.state": "attached", "head.branch": "main",
+		"head.commit.subject": "initial commit", "head.commit.author": "Test",
+		"head.upstream.name": "origin/main", "head.upstream.gone": false,
+		"head.upstream.ahead": 0.0, "head.upstream.behind": 0.0,
+	})
+	if field(r, "head.commit.hash") == nil || field(r, "head.commit.short_hash") == nil || field(r, "head.commit.time") == nil {
+		t.Errorf("head.commit incomplete: %v", field(r, "head.commit"))
+	}
+	wantAbsent(t, "clean", r, "branch", "upstream", "last_commit")
+}
+
+func TestStatusUpstreamWithoutConfiguredUpstream(t *testing.T) {
+	config, _, _ := statusRepos(t)
+	r := entry(t, statusJSON(t, 0, "--config", config), "dirty")
+	u, _ := field(r, "head.upstream").(map[string]any)
+	if len(u) != 4 {
+		t.Fatalf("head.upstream = %#v, want name, gone, ahead, and behind", field(r, "head.upstream"))
+	}
+	// Without an upstream, ahead and behind do not apply: null, not zero.
+	wantFields(t, "dirty", r, map[string]any{
+		"head.upstream.name": nil, "head.upstream.gone": false,
+		"head.upstream.ahead": nil, "head.upstream.behind": nil,
+	})
+}
+
+func TestStatusDetachedHead(t *testing.T) {
+	config, _, clean := statusRepos(t)
+	tu.Git(t, clean, "switch", "-q", "--detach")
+	r := entry(t, statusJSON(t, 0, "--config", config), "clean")
+	wantFields(t, "clean", r, map[string]any{"head.state": "detached", "head.branch": nil,
+		"head.commit.subject": "initial commit"})
+}
+
+func TestStatusUnbornHead(t *testing.T) {
+	tu.IsolateGit(t)
+	repo := filepath.Join(tu.Canonical(t, t.TempDir()), "empty")
+	tu.Git(t, "", "init", "-q", "-b", "main", repo)
+	config := writeConfig(t, "[[repositories]]\npath = \""+repo+"\"\n")
+	r := entry(t, statusJSON(t, 0, "--config", config), "empty")
+	wantFields(t, "empty", r, map[string]any{"head.state": "unborn", "head.branch": "main", "head.commit": nil})
 }
 
 func TestStatusSummaryNestsStateCounts(t *testing.T) {
@@ -487,7 +557,7 @@ func TestStatusNeverReportsUnknownStateAsClean(t *testing.T) {
 	if r["known"] != false || r["health"] != "error" || r["availability"] != "missing" || r["error"] == nil {
 		t.Errorf("missing: %v", r)
 	}
-	for _, k := range []string{"branch", "head", "operation", "counts", "upstream", "last_commit", "branches"} {
+	for _, k := range []string{"head", "operation", "counts", "branches"} {
 		if v, ok := r[k]; !ok || v != nil {
 			t.Errorf("missing.%s = %#v, want null", k, v)
 		}
@@ -571,8 +641,8 @@ func TestStatusFetchesOnlyWhenAsked(t *testing.T) {
 	tu.Commit(t, upstream, "new", "new\n", "upstream commit")
 
 	r := entry(t, statusJSON(t, 0, "--config", config), "clean")
-	if _, err := os.Stat(fetchHead); !os.IsNotExist(err) || field(r, "upstream.behind") != 0.0 {
-		t.Fatalf("status without --fetch fetched: %v, %v", err, r["upstream"])
+	if _, err := os.Stat(fetchHead); !os.IsNotExist(err) || field(r, "head.upstream.behind") != 0.0 {
+		t.Fatalf("status without --fetch fetched: %v, %v", err, r["head"])
 	}
 	statusJSON(t, 0, "--config", config, "--fetch", "--filter", "family:personal")
 	if _, err := os.Stat(fetchHead); !os.IsNotExist(err) {
@@ -581,7 +651,7 @@ func TestStatusFetchesOnlyWhenAsked(t *testing.T) {
 
 	doc := statusJSON(t, 3, "--config", config, "--fetch", "--fail-on", "error")
 	r = entry(t, doc, "clean")
-	if field(r, "upstream.behind") != 1.0 || field(r, "fetch.status") != "succeeded" || r["last_fetch"] == nil || r["health"] != "behind" {
+	if field(r, "head.upstream.behind") != 1.0 || field(r, "fetch.status") != "succeeded" || r["last_fetch"] == nil || r["health"] != "behind" {
 		t.Errorf("clean after fetch: %v", r)
 	}
 	n := entry(t, doc, "notes")
@@ -693,23 +763,23 @@ func TestStatusReportsBranchReasons(t *testing.T) {
 		byName[b["name"].(string)] = b
 	}
 	for name, want := range map[string]map[string]any{
-		"main":    {"state": "behind", "pinned": true, "upstream": "origin/main", "ahead": 0.0, "behind": 1.0},
-		"release": {"state": "missing", "pinned": true, "upstream": nil, "ahead": nil, "behind": nil, "commit_time": nil},
-		"gone":    {"state": "gone", "pinned": false, "upstream": "origin/g", "ahead": nil, "behind": nil},
-		"local":   {"state": "noupstream", "pinned": false, "upstream": nil, "ahead": nil, "behind": nil},
-		"div":     {"state": "diverged", "pinned": false, "upstream": "origin/d", "ahead": 1.0, "behind": 1.0},
-		"ahead":   {"state": "ahead", "pinned": false, "upstream": "origin/a", "ahead": 1.0, "behind": 0.0},
+		"main": {"state": "behind", "pinned": true, "upstream.name": "origin/main", "upstream.gone": false,
+			"upstream.ahead": 0.0, "upstream.behind": 1.0},
+		"release": {"state": "missing", "pinned": true, "upstream": nil, "commit_time": nil},
+		"gone": {"state": "gone", "pinned": false, "upstream.name": "origin/g", "upstream.gone": true,
+			"upstream.ahead": nil, "upstream.behind": nil},
+		"local": {"state": "noupstream", "pinned": false, "upstream.name": nil, "upstream.gone": false,
+			"upstream.ahead": nil, "upstream.behind": nil},
+		"div":   {"state": "diverged", "pinned": false, "upstream.name": "origin/d", "upstream.ahead": 1.0, "upstream.behind": 1.0},
+		"ahead": {"state": "ahead", "pinned": false, "upstream.name": "origin/a", "upstream.ahead": 1.0, "upstream.behind": 0.0},
 	} {
 		b, ok := byName[name]
 		if !ok {
 			t.Errorf("branch %s not reported: %v", name, r["branches"])
 			continue
 		}
-		for k, v := range want {
-			if got, ok := b[k]; !ok || got != v {
-				t.Errorf("%s.%s = %#v, want %#v", name, k, got, v)
-			}
-		}
+		wantFields(t, name, b, want)
+		wantAbsent(t, name, b, "ahead", "behind")
 		if _, missing := want["commit_time"]; !missing {
 			if ts, _ := b["commit_time"].(string); ts == "" {
 				t.Errorf("%s.commit_time = %#v, want a time", name, b["commit_time"])
@@ -773,14 +843,6 @@ func TestStatusGoneUpstreamHasNoCounts(t *testing.T) {
 	tu.Git(t, repo, "fetch", "-q", "--prune")
 	config := writeConfig(t, "[[repositories]]\npath = \""+repo+"\"\n")
 	r := entry(t, statusJSON(t, 0, "--config", config), "gone")
-	u, _ := r["upstream"].(map[string]any)
-	if u == nil || u["gone"] != true || u["name"] != "origin/g" {
-		t.Fatalf("upstream = %v, want gone origin/g", r["upstream"])
-	}
-	if v, ok := u["ahead"]; !ok || v != nil {
-		t.Errorf("upstream.ahead = %#v, want null", v)
-	}
-	if v, ok := u["behind"]; !ok || v != nil {
-		t.Errorf("upstream.behind = %#v, want null", v)
-	}
+	wantFields(t, "gone", r, map[string]any{"head.upstream.name": "origin/g", "head.upstream.gone": true,
+		"head.upstream.ahead": nil, "head.upstream.behind": nil})
 }

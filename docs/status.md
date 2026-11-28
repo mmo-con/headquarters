@@ -67,24 +67,25 @@ field is renamed, removed, or changes its meaning:
       "known": true,
       "health": "dirty",
       "states": ["dirty", "behind", "branches", "stashed"],
-      "branch": "main",
-      "head": "attached",
+      "head": {
+        "state": "attached",
+        "branch": "main",
+        "commit": { "hash": "abc1234…", "short_hash": "abc1234",
+                    "author": "Jane Doe",
+                    "subject": "tui: group the operations view by status",
+                    "time": "2026-11-22T20:41:00Z" },
+        "upstream": { "name": "origin/main", "gone": false, "ahead": 0, "behind": 3 }
+      },
       "operation": "none",
       "counts": { "staged": 0, "modified": 2, "deleted": 0, "renamed": 0,
                   "conflicts": 0, "untracked": 1, "stashed": 1 },
-      "upstream": { "name": "origin/main", "configured": true, "gone": false,
-                    "ahead": 0, "behind": 3 },
       "branches": [
         { "name": "release", "state": "behind", "pinned": true,
-          "upstream": "origin/release", "ahead": 0, "behind": 2,
+          "upstream": { "name": "origin/release", "gone": false, "ahead": 0, "behind": 2 },
           "commit_time": "2026-11-20T09:30:00Z" }
       ],
       "remote": { "name": "origin", "url": "git@github.com:mmo-con/headquarters.git" },
       "last_fetch": "2026-11-23T08:12:00Z",
-      "last_commit": { "hash": "abc1234…", "short_hash": "abc1234",
-                       "author": "Jane Doe",
-                       "subject": "tui: group the operations view by status",
-                       "time": "2026-11-22T20:41:00Z" },
       "fetch": null,
       "error": null
     }
@@ -105,8 +106,14 @@ own `schema` field; there is no `generated_at` and no `summary`.
   `critical`, `dirty`, `behind`, `ahead`, `attention`, `ok`, or `unknown`.
 - `availability` is `available`, `missing`, `not_a_repository`,
   `not_worktree_root`, `bare`, `untrusted_owner`, or `validation_failed`.
-- `head` is `attached`, `detached`, or `unborn`; `operation` is `none` or the
-  operation in progress: `merging`, `rebasing`, `cherry_picking`,
+- `head` describes the checked-out branch: `state` is `attached`,
+  `detached`, or `unborn`; `branch` is `null` when HEAD is detached, and
+  `commit` is `null` when it is unborn.
+- `upstream`, in `head` and in each entry of `branches`, has the same
+  fields: `name` is `null` when no upstream is configured, `gone` reports an
+  upstream that no longer exists, and `ahead` and `behind` are `null` unless
+  the upstream exists.
+- `operation` is `none` or the operation in progress: `merging`, `rebasing`, `cherry_picking`,
   `reverting`, or `bisecting`.
 - Values are stable identifiers, not display text. Values taken from the
   filter language, such as the `--fail-on` states, are spelled as there;
@@ -115,15 +122,14 @@ own `schema` field; there is no `generated_at` and no `summary`.
   could not be determined; an unknown repository is never reported as clean
   or up to date. `counts.untracked` is `null` when untracked files are not
   checked, `last_fetch` when the repository was never fetched or the time is
-  unknown, `upstream.name` when no upstream is configured, and
-  `upstream.ahead` and `upstream.behind` when no upstream is configured or
-  it is gone. A count is `0` only when it is known to be zero.
+  unknown, `head` when HEAD cannot be read, and `head.upstream` when the
+  upstream state is unknown. A count is `0` only when it is known to be
+  zero.
 - `branches` lists the other local branches that need attention, as in the
   detail panel: pinned branches first, then the others by latest commit.
   `state` is `missing`, `noupstream`, `gone`, `diverged`, `ahead`, or
-  `behind`; `upstream` is `null` without an upstream, `ahead` and `behind`
-  are `null` unless the upstream exists, and `commit_time` is `null` for a
-  missing pinned branch. `branches` is `null` when the branch state is
+  `behind`; `upstream` and `commit_time` are `null` for a missing pinned
+  branch. `branches` is `null` when the branch state is
   unknown or `[branches].enabled = false`, and `[]` when no branch needs
   attention. Count them so that `null` stays distinguishable from zero, for
   example with
