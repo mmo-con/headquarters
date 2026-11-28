@@ -100,10 +100,10 @@ The architecture and the decisions behind it are documented in
   modified, untracked, stashed, ahead, behind) plus a State column for everything
   else, per-cell colors, spinners and progress bars, dialogs as overlays, and
   header counters that double as quick filters. Colors, built-in theme presets
-  (such as high contrast, Catppuccin, Dracula, Gruvbox, Monokai, and One
-  Dark), and the symbol set (Unicode, Nerd Font, ASCII) are configurable;
-  Catppuccin and Gruvbox can follow the terminal's light or dark background.
-  `NO_COLOR` is honored.
+  (such as high contrast, Catppuccin, Dracula, Gruvbox, Monokai, and One),
+  and the symbol set (Unicode, Nerd Font, ASCII) are configurable;
+  Catppuccin, Gruvbox, and One can follow the terminal's light or dark
+  background. `NO_COLOR` is honored.
 
 headquarters uses the official Git CLI for everything. Background Git
 processes run without a controlling terminal, so they can never prompt in or

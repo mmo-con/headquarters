@@ -201,8 +201,8 @@ func TestThemePresets(t *testing.T) {
 	}
 }
 
-func TestOneDarkAndMonokaiPresets(t *testing.T) {
-	for _, name := range []string{"onedark", "monokai"} {
+func TestOneAndMonokaiPresets(t *testing.T) {
+	for _, name := range []string{"one", "one-dark", "one-light", "monokai"} {
 		cfg, err := Parse([]byte("version = 1\n[ui.theme]\npreset = \""+name+"\"\n"), "/x", env(nil))
 		if err != nil {
 			t.Errorf("preset %s: %v", name, err)
