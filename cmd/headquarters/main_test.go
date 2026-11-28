@@ -384,7 +384,7 @@ func TestStatusReportsEveryRepository(t *testing.T) {
 	for path, want := range map[string]any{
 		"path": clean, "family": "Work", "availability": "available", "known": true,
 		"remote.name": "origin",
-		"last_fetch":  nil, "fetch": nil, "error": nil,
+		"last_fetch":  nil, "fetch_result": nil, "error": nil,
 		// never fetched
 		"health": "attention",
 	} {
@@ -663,13 +663,16 @@ func TestStatusFetchesOnlyWhenAsked(t *testing.T) {
 
 	doc := statusJSON(t, 3, "--config", config, "--fetch", "--fail-on", "error")
 	r = entry(t, doc, "clean")
-	if field(r, "head.upstream.behind") != 1.0 || field(r, "fetch.status") != "succeeded" || r["last_fetch"] == nil || r["health"] != "behind" {
+	if field(r, "head.upstream.behind") != 1.0 || field(r, "fetch_result.status") != "succeeded" || r["last_fetch"] == nil || r["health"] != "behind" {
 		t.Errorf("clean after fetch: %v", r)
 	}
 	n := entry(t, doc, "notes")
-	if field(n, "fetch.status") != "failed" || field(n, "fetch.error") == nil || n["health"] != "error" || n["error"] == nil {
-		t.Errorf("failed fetch must be reported: %v", n)
+	// The fetch error is reported once, in fetch_result.
+	wantFields(t, "notes", n, map[string]any{"fetch_result.status": "failed", "health": "error", "error": nil})
+	if field(n, "fetch_result.error") == nil {
+		t.Errorf("notes.fetch_result = %v, want the error", n["fetch_result"])
 	}
+	wantAbsent(t, "notes", n, "fetch")
 }
 
 func TestStatusSanitizesRepositoryText(t *testing.T) {

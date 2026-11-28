@@ -86,7 +86,7 @@ field is renamed, removed, or changes its meaning:
       ],
       "remote": { "name": "origin", "url": "git@github.com:mmo-con/headquarters.git" },
       "last_fetch": "2026-11-23T08:12:00Z",
-      "fetch": null,
+      "fetch_result": null,
       "error": null
     }
   ]
@@ -137,8 +137,12 @@ own `schema` field; there is no `generated_at` and no `summary`.
   example with
   `jq '.repositories[] | .branches | if . == null then "?" else length end'`;
   `--fail-on branches` checks for them directly.
-- `fetch` is `null` without `--fetch`, otherwise the `status` (`succeeded`,
-  `failed`, `skipped`, or `cancelled`) and `error` of the fetch.
-- `error` collects configuration, inspection, and fetch errors.
+- `last_fetch` is the time of the latest fetch of the repository, by any
+  tool. `fetch_result` is `null` without `--fetch`, otherwise the `status`
+  (`succeeded`, `failed`, `skipped`, or `cancelled`) and `error` of the fetch
+  of this run.
+- `error` collects configuration and inspection errors. A failed fetch is
+  reported only in `fetch_result`, but it also sets `health` to `error` and
+  adds `error` to `states`.
 - Text from repositories is stripped of control characters, and user
   information in URLs is redacted.
