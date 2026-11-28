@@ -497,6 +497,13 @@ func TestStatusGroupsWorktreeState(t *testing.T) {
 	}
 }
 
+func TestStatusReportsMissingFamilyAsNull(t *testing.T) {
+	tu.IsolateGit(t)
+	repo := tu.InitRepo(t, filepath.Join(tu.Canonical(t, t.TempDir()), "loose"))
+	config := writeConfig(t, "[[repositories]]\npath = \""+repo+"\"\n")
+	wantFields(t, "loose", entry(t, statusJSON(t, 0, "--config", config), "loose"), map[string]any{"family": nil})
+}
+
 func TestStatusSummaryNestsStateCounts(t *testing.T) {
 	config, _, _ := statusRepos(t)
 	doc := statusJSON(t, 0, "--config", config)

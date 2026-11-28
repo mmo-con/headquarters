@@ -104,6 +104,8 @@ own `schema` field; there is no `generated_at` and no `summary`.
   `attention`. It contains `unknown` exactly when `known` is `false`.
 - `health` is the level of the dashboard's health column: `error`,
   `critical`, `dirty`, `behind`, `ahead`, `attention`, `ok`, or `unknown`.
+- `family` is `null` for repositories without a family, which the dashboard
+  shows as Ungrouped and `--filter family:ungrouped` selects.
 - `availability` is `available`, `missing`, `not_a_repository`,
   `not_worktree_root`, `bare`, `untrusted_owner`, or `validation_failed`.
 - `head` describes the checked-out branch: `state` is `attached`,
