@@ -1250,6 +1250,25 @@ func TestMonochromeSelectionKeepsDefaultColorsReadable(t *testing.T) {
 	}
 }
 
+func TestLightBackgroundUsesLightThemeVariant(t *testing.T) {
+	cfg, err := config.Parse([]byte("version = 1\n[ui.theme]\npreset = \"gruvbox\"\n"), "/x", func(string) string { return "" })
+	if err != nil {
+		t.Fatal(err)
+	}
+	a := app.New("/none", cfg, git.New("git"))
+	t.Cleanup(a.Close)
+	m := New(a)
+	m.SetDarkBackground(false)
+	light := lipgloss.Color(config.ResolveColor(config.ThemePresets["gruvbox-light"].Error))
+	if fg := m.theme.err.GetForeground(); fg != light {
+		t.Fatalf("a light background must use the light variant, got %v", fg)
+	}
+	m.Update(inventoryMsg{loaded: &app.Loaded{Config: cfg, Git: a.Git}})
+	if fg := m.theme.err.GetForeground(); fg != light {
+		t.Fatalf("a reloaded configuration must keep the detected background, got %v", fg)
+	}
+}
+
 func TestOperationsKeepGroupTitleWhenScrolled(t *testing.T) {
 	m := newModel(t)
 	var ids []domain.RepositoryID
