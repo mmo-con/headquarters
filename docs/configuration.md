@@ -232,16 +232,17 @@ single colors of the preset.
 | `gruvbox` | `gruvbox-dark` or `gruvbox-light`, by the terminal background |
 | `gruvbox-dark` / `gruvbox-light` | Gruvbox, dark / light background |
 | `monokai` | Monokai, dark background |
-| `onedark` | One Dark, dark background |
+| `one` | `one-dark` or `one-light`, by the terminal background |
+| `one-dark` / `one-light` | One Dark / One Light, dark / light background |
 
 The ANSI-based presets follow the terminal's palette and suit light and dark
 backgrounds. The other presets use fixed `#rrggbb` colors and require a
-terminal with true color support. `catppuccin` and `gruvbox` choose the
-dark or light variant themselves: headquarters asks the terminal for its
-background color once at startup and keeps the answer for reloads with
-`R`. A terminal that does not answer, such as tmux
-without passthrough, counts as dark; choose the variant explicitly there.
-Color keys override both variants.
+terminal with true color support. `catppuccin`, `gruvbox`, and `one`
+choose the dark or light variant themselves: headquarters asks the terminal
+for its background color once at startup and keeps the answer for reloads
+with `R`. A terminal that does not answer, such as tmux without
+passthrough, counts as dark; choose the variant explicitly there. Color
+keys override both variants.
 
 ```toml
 [ui.theme]

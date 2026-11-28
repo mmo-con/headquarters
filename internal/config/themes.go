@@ -59,13 +59,21 @@ var ThemePresets = map[string]Theme{
 		Ahead: "#50fa7b", Behind: "#ff79c6", Success: "#50fa7b",
 		Error: "#ff5555", Warning: "#ffb86c", Dim: "#6272a4",
 	},
-	"onedark": {
+	"one-dark": {
 		ActiveBorder: "#61afef", InactiveBorder: "#5c6370", Title: "#c678dd",
 		SelectedBackground: "#3e4451", SelectedForeground: "#dcdfe4", SelectedAccent: "#c678dd",
 		HeaderBackground: "#61afef", HeaderForeground: "#282c34",
 		Key: "#56b6c2", Branch: "#61afef", Clean: "#7f848e", Dirty: "#e5c07b",
 		Ahead: "#98c379", Behind: "#c678dd", Success: "#98c379",
 		Error: "#e06c75", Warning: "#d19a66", Dim: "#7f848e",
+	},
+	"one-light": {
+		ActiveBorder: "#4078f2", InactiveBorder: "#a0a1a7", Title: "#a626a4",
+		SelectedBackground: "#e5e5e6", SelectedForeground: "#383a42", SelectedAccent: "#a626a4",
+		HeaderBackground: "#4078f2", HeaderForeground: "#fafafa",
+		Key: "#0184bc", Branch: "#4078f2", Clean: "#696c77", Dirty: "#c18401",
+		Ahead: "#50a14f", Behind: "#a626a4", Success: "#50a14f",
+		Error: "#e45649", Warning: "#986801", Dim: "#696c77",
 	},
 	"monokai": {
 		ActiveBorder: "#a6e22e", InactiveBorder: "#75715e", Title: "#a6e22e",
@@ -102,6 +110,7 @@ type ThemeVariants struct{ Dark, Light string }
 var ThemeFamilies = map[string]ThemeVariants{
 	"catppuccin": {Dark: "catppuccin-mocha", Light: "catppuccin-latte"},
 	"gruvbox":    {Dark: "gruvbox-dark", Light: "gruvbox-light"},
+	"one":        {Dark: "one-dark", Light: "one-light"},
 }
 
 // ThemePresetNames returns the preset and family names in alphabetical
