@@ -66,6 +66,7 @@ field is renamed, removed, or changes its meaning:
       "availability": "available",
       "known": true,
       "health": "dirty",
+      "states": ["dirty", "behind", "branches", "stashed"],
       "branch": "main",
       "head": "attached",
       "operation": "none",
@@ -97,6 +98,9 @@ own `schema` field; there is no `generated_at` and no `summary`.
 - `summary` counts the reported repositories in `total`, per `--fail-on`
   state in `states`, and per `health` level in `health`. `states` and
   `health` list every state and level, including those with a count of 0.
+- `states` lists the `--fail-on` states that the repository is in, in the
+  order of `headquarters status -h`, for example to see why its `health` is
+  `attention`. It contains `unknown` exactly when `known` is `false`.
 - `health` is the level of the dashboard's health column: `error`,
   `critical`, `dirty`, `behind`, `ahead`, `attention`, `ok`, or `unknown`.
 - `availability` is `available`, `missing`, `not_a_repository`,

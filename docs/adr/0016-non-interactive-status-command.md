@@ -43,7 +43,9 @@ its batches are finished. A future long-running frontend follows the same
 rule.
 
 **Versioned output.** The report is JSON with a `schema` number, a summary,
-and one entry per repository; `--format ndjson` prints one repository per
+and one entry per repository. Each entry lists the `--fail-on` states it is
+in, so that consumers do not have to repeat rules such as the age of a stale
+fetch; `--format ndjson` prints one repository per
 line. Adding fields keeps the schema number; renaming, removing, or changing
 the meaning of a field increments it. Unknown state is `null` and marks the
 entry `known: false`, following
