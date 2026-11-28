@@ -54,10 +54,12 @@ type RepositoryReport struct {
 	Branches  []BranchReport `json:"branches"`
 	Remote    *RemoteReport  `json:"remote"`
 	LastFetch *time.Time     `json:"last_fetch"`
-	// Fetch is the result of the fetch, null if the repository was not
-	// fetched.
-	Fetch *FetchReport `json:"fetch"`
-	Error *string      `json:"error"`
+	// FetchResult is the result of the fetch of this run, null if the
+	// repository was not fetched.
+	FetchResult *FetchReport `json:"fetch_result"`
+	// Error collects configuration and inspection errors; a fetch error is
+	// only in FetchResult.
+	Error *string `json:"error"`
 }
 
 // WorktreeReport is the operation in progress and the changed entries of a
@@ -252,13 +254,9 @@ func repositoryReport(s *Status, r *domain.Repository) RepositoryReport {
 	if res, ok := s.FetchResult(r); ok {
 		f := &FetchReport{Status: string(res.Status)}
 		if res.Error != nil {
-			msg := clean(res.Error.Error())
-			f.Error = &msg
-			if res.Status == domain.StatusFailed {
-				errs = append(errs, "fetch failed: "+msg)
-			}
+			f.Error = ptr(clean(res.Error.Error()))
 		}
-		rr.Fetch = f
+		rr.FetchResult = f
 	}
 	if len(errs) > 0 {
 		rr.Error = ptr(strings.Join(errs, "; "))

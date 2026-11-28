@@ -28,8 +28,9 @@ is given. `--fetch` runs the fetch batch of
 timeout, and store deduplication, like `F` in the dashboard: the filter
 evaluated before the fetch selects the targets, the fetched stores are
 inspected again, and the output applies the filter to the state after the
-fetch. A failed fetch is reported per repository and classifies the
-repository as an error, as in the health column.
+fetch. A failed fetch is reported per repository, in the fetch result
+and not again in the error of the entry, and classifies the repository as an
+error, as in the health column.
 
 **One implementation.** The inventory, the inspection, the fetch batch, the
 filter language, the health classification, and the report model live in
