@@ -127,7 +127,7 @@ func branchReport(b domain.BranchState) BranchReport {
 	}
 	br.Upstream = upstreamReport(b.Upstream, b.Gone, b.Ahead, b.Behind)
 	if !b.CommitTime.IsZero() {
-		br.CommitTime = ptr(b.CommitTime.UTC())
+		br.CommitTime = ptr(reportTime(b.CommitTime))
 	}
 	return br
 }
@@ -154,7 +154,7 @@ type FetchReport struct {
 func NewReport(s *Status, now time.Time) Report {
 	rep := Report{
 		Schema:       ReportSchema,
-		GeneratedAt:  now.UTC().Truncate(time.Second),
+		GeneratedAt:  reportTime(now),
 		Summary:      Summary{States: map[string]int{}, Health: map[string]int{}},
 		Repositories: []RepositoryReport{},
 	}
@@ -209,7 +209,7 @@ func repositoryReport(s *Status, r *domain.Repository) RepositoryReport {
 		}
 		if r.LastCommit.Valid && r.LastCommit.Value != nil {
 			c := r.LastCommit.Value
-			hr.Commit = &CommitReport{Hash: c.ID, ShortHash: c.ShortID, Author: clean(c.Author), Subject: clean(c.Subject), Time: c.Time.UTC()}
+			hr.Commit = &CommitReport{Hash: c.ID, ShortHash: c.ShortID, Author: clean(c.Author), Subject: clean(c.Subject), Time: reportTime(c.Time)}
 		}
 		if r.Upstream.Valid {
 			u := r.Upstream.Value
@@ -245,8 +245,7 @@ func repositoryReport(s *Status, r *domain.Repository) RepositoryReport {
 		rr.Remote = &RemoteReport{Name: clean(p.Name), URL: clean(domain.RedactURL(p.URL))}
 	}
 	if r.LastFetch.Valid && r.LastFetch.Value != nil {
-		t := r.LastFetch.Value.UTC()
-		rr.LastFetch = &t
+		rr.LastFetch = ptr(reportTime(*r.LastFetch.Value))
 	}
 	var errs []string
 	for _, err := range []error{r.EntryError, r.Inspected.Err} {
@@ -297,6 +296,10 @@ func operationValue(o domain.OperationInProgress) string {
 	}
 	return strings.ReplaceAll(o.String(), "-", "_")
 }
+
+// reportTime is t in UTC with whole seconds, the precision of commit times,
+// so that all times of the report have the same form.
+func reportTime(t time.Time) time.Time { return t.UTC().Truncate(time.Second) }
 
 func ptr[T any](v T) *T { return &v }
 
