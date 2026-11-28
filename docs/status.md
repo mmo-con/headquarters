@@ -127,6 +127,7 @@ own `schema` field; there is no `generated_at` and no `summary`.
   `none` or the operation in progress: `merging`, `rebasing`,
   `cherry_picking`, `reverting`, or `bisecting`. `stashes` is the number of stash entries,
   which all worktrees of a repository share.
+- Times are RFC 3339 timestamps in UTC with whole seconds.
 - Values are stable identifiers, not display text. Values taken from the
   filter language, such as the `--fail-on` states, are spelled as there;
   all others use snake_case.

@@ -150,3 +150,26 @@ func TestReportGolden(t *testing.T) {
 		t.Errorf("report differs from %s; review the change and run with -update:\n%s", golden, buf.String())
 	}
 }
+
+func TestReportTimesHaveWholeSeconds(t *testing.T) {
+	// The modification time of FETCH_HEAD has nanoseconds; commit times do
+	// not, but the report must not depend on that.
+	at := time.Date(2026, 11, 23, 8, 12, 0, 564312713, time.FixedZone("CET", 3600))
+	want := time.Date(2026, 11, 23, 7, 12, 0, 0, time.UTC)
+	r := domain.Repository{Name: "r"}
+	r.Head = domain.KnownValue(domain.HeadState{Branch: "main"})
+	r.LastFetch = domain.KnownValue(&at)
+	r.LastCommit = domain.KnownValue(&domain.CommitSummary{Time: at})
+	r.Branches = domain.KnownValue([]domain.BranchState{{Name: "b", CommitTime: at}})
+	s := reportStatus(r)
+	rep := NewReport(s, at)
+	rr := rep.Repositories[0]
+	for name, got := range map[string]*time.Time{
+		"generated_at": &rep.GeneratedAt, "last_fetch": rr.LastFetch,
+		"head.commit.time": &rr.Head.Commit.Time, "branches[0].commit_time": rr.Branches[0].CommitTime,
+	} {
+		if got == nil || !got.Equal(want) || got.Location() != time.UTC {
+			t.Errorf("%s = %v, want %v", name, got, want)
+		}
+	}
+}
