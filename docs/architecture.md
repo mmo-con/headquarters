@@ -57,5 +57,6 @@ The [ADR index](adr/README.md) explains how the records are maintained.
 | Keeping branches that exist on the server | [ADR 0022](adr/0022-keeping-branches-that-exist-on-the-server.md) |
 | Fetch hint in the branch cleanup | [ADR 0023](adr/0023-fetch-hint-in-the-branch-cleanup.md) |
 
-User-facing configuration and keys are documented in
-[configuration.md](configuration.md) and [keybindings.md](keybindings.md).
+User-facing configuration, keys, and the status command are documented in
+[configuration.md](configuration.md), [keybindings.md](keybindings.md), and
+[status.md](status.md).
