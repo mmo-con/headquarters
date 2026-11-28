@@ -644,3 +644,46 @@ func TestDeleteMergedBranchesWithRealRepositories(t *testing.T) {
 		t.Fatalf("the operations view must name the branches:\n%s", v)
 	}
 }
+
+func TestCleanupPreviewHintsAtMissingFetch(t *testing.T) {
+	tu.IsolateGit(t)
+	base := tu.Canonical(t, t.TempDir())
+	up := filepath.Join(base, "up.git")
+	tu.Git(t, "", "init", "-q", "--bare", up)
+	clone := filepath.Join(base, "clone")
+	tu.Git(t, "", "clone", "-q", up, clone)
+	tu.Commit(t, clone, "a", "a\n", "init")
+	tu.Git(t, clone, "push", "-q", "origin", "main")
+	tu.Git(t, clone, "remote", "set-head", "origin", "--auto")
+	tu.Git(t, clone, "fetch", "-q")
+	local := tu.InitRepo(t, filepath.Join(base, "local"))
+
+	cfg := config.Default()
+	cfg.Repositories = []config.Repository{{Path: clone, Enabled: true}, {Path: local, Enabled: true}}
+	client, _, err := git.Open(context.Background(), "git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	a := app.New("", cfg, client)
+	t.Cleanup(a.Close)
+	m := New(a)
+	m.Update(tea.WindowSizeMsg{Width: 140, Height: 30})
+	m.Update(inventoryMsg{result: a.LoadInventory(context.Background())})
+	pump(t, m)
+
+	const hint = "1 repository was not fetched since start"
+	keys(m, "D")
+	pump(t, m)
+	if v := ansi.Strip(m.View()); !strings.Contains(v, hint) || !strings.Contains(v, "press f") {
+		t.Fatalf("a repository fetched only before the start must be named, one without a remote not:\n%s", v)
+	}
+	keys(m, "esc")
+
+	keys(m, "F")
+	pump(t, m)
+	keys(m, "esc", "D")
+	pump(t, m)
+	if v := ansi.Strip(m.View()); strings.Contains(v, "not fetched since start") {
+		t.Fatalf("no hint after a fetch:\n%s", v)
+	}
+}

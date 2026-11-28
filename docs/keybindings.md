@@ -174,6 +174,9 @@ with the reason:
 | `no commits of its own` | without upstream and at the commit of the default branch, for example just created |
 
 The default branch itself and branches that are not merged are not listed.
+A branch deleted on the server counts as gone only after a fetch. The
+confirmation therefore states how many repositories with remotes were not
+fetched since headquarters started; press `f` first to find these branches.
 A repository without a remote or without `refs/remotes/<remote>/HEAD` is
 listed with the hint `git remote set-head <remote> --auto`.
 

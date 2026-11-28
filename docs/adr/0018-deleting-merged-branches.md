@@ -1,7 +1,8 @@
 # ADR 0018: Deleting merged branches
 
 Status: Accepted, amended by [ADR 0019](0019-deleting-squash-and-rebase-merged-branches.md)
-and [ADR 0022](0022-keeping-branches-that-exist-on-the-server.md)
+[ADR 0022](0022-keeping-branches-that-exist-on-the-server.md), and
+[ADR 0023](0023-fetch-hint-in-the-branch-cleanup.md)
 
 ## Context
 
@@ -43,7 +44,9 @@ this ref is listed with the reason and the hint
 `git remote set-head <remote> --auto`. Several entries of a store are read
 once, from the first target entry. The confirmation is accepted only after
 every read is finished, so no dialog becomes confirmable asynchronously.
-The inspection itself does not change and keeps its cost.
+The inspection itself does not change and keeps its cost. The preview
+names repositories not fetched since the start
+([ADR 0023](0023-fetch-hint-in-the-branch-cleanup.md)).
 
 **Candidates.** A branch is deleted only if it is merged into the default
 branch and Git's own rule of `git branch -d` allows it: merged into its

@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mattn/go-runewidth"
@@ -161,6 +162,12 @@ func (m *Model) viewCleanupPreview(iw, rows int) (string, []string) {
 		t.dim.Render("also after squash and rebase merges; remote branches stay untouched."),
 		t.dim.Render("Branches that are kept are listed with the reason."),
 	)
+	if n := notFetchedSince(p.read, m.started); n > 0 {
+		head = append(head,
+			t.warn.Render(fmt.Sprintf("%d %s not fetched since start; press f first to find", n,
+				plural(n, "repository was", "repositories were"))),
+			t.warn.Render("branches deleted on the server."))
+	}
 	if p.hidden > 0 {
 		head = append(head, t.warn.Render(m.hiddenMarksNotice(p.hidden)))
 	}
@@ -168,6 +175,22 @@ func (m *Model) viewCleanupPreview(iw, rows int) (string, []string) {
 		head = append(head, "")
 	}
 	return "Delete merged branches", append(head, window(list, m.overlayIdx, min(len(list), max(rows-len(head), 3)))...)
+}
+
+// notFetchedSince counts the repositories with remotes whose store was not
+// fetched since start. The preview reads local refs only, so a branch
+// deleted on the server counts as gone only after a fetch with --prune.
+func notFetchedSince(repos []domain.Repository, start time.Time) int {
+	n := 0
+	for _, r := range repos {
+		if !r.Remotes.Valid || len(r.Remotes.Value) == 0 || !r.LastFetch.Valid {
+			continue
+		}
+		if f := r.LastFetch.Value; f == nil || f.Before(start) {
+			n++
+		}
+	}
+	return n
 }
 
 func plural(n int, one, many string) string {
