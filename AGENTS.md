@@ -34,6 +34,7 @@ Keep documentation consistent with the change:
 |---|---|
 | configuration option | `docs/configuration.md`, `examples/config.toml` |
 | key, symbol, or filter | `docs/keybindings.md`, help view in `internal/tui/keymap.go`, legend in `internal/tui/icons.go` |
+| `status` option, exit status, or report field | `docs/status.md` |
 | design decision or constraint | the relevant ADR; follow [ADR maintenance](docs/adr/README.md) |
 | package structure | `docs/architecture.md` |
 | user-visible feature | `README.md` |
