@@ -1,7 +1,6 @@
 package app
 
 import (
-	"encoding/json"
 	"regexp"
 	"strings"
 	"time"
@@ -26,18 +25,9 @@ type Report struct {
 // Summary counts the reported repositories in total, per state of
 // StatusStates, and per health level.
 type Summary struct {
-	Total  int
-	States map[string]int
-	Health map[string]int
-}
-
-// MarshalJSON writes the state counts next to the total.
-func (s Summary) MarshalJSON() ([]byte, error) {
-	m := map[string]any{"total": s.Total, "health": s.Health}
-	for k, v := range s.States {
-		m[k] = v
-	}
-	return json.Marshal(m)
+	Total  int            `json:"total"`
+	States map[string]int `json:"states"`
+	Health map[string]int `json:"health"`
 }
 
 // RepositoryReport is the state of one repository.

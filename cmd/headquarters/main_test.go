@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mmo-con/headquarters/internal/app"
 	tu "github.com/mmo-con/headquarters/internal/testutil"
 )
 
@@ -374,7 +375,7 @@ func TestStatusReportsEveryRepository(t *testing.T) {
 		t.Fatalf("repositories: %s", got)
 	}
 	// missing is unavailable, so its state is unknown.
-	if doc.Summary["total"] != 4.0 || doc.Summary["dirty"] != 1.0 || doc.Summary["unknown"] != 1.0 {
+	if doc.Summary["total"] != 4.0 || field(doc.Summary, "states.dirty") != 1.0 || field(doc.Summary, "states.unknown") != 1.0 {
 		t.Errorf("summary: %v", doc.Summary)
 	}
 	r := entry(t, doc, "clean")
@@ -409,6 +410,21 @@ func TestStatusReportsEveryRepository(t *testing.T) {
 	// Without an upstream, ahead and behind do not apply: null, not zero.
 	if u := d["upstream"].(map[string]any); u["ahead"] != nil || u["behind"] != nil {
 		t.Errorf("dirty.upstream = %v, want ahead and behind null", u)
+	}
+}
+
+func TestStatusSummaryNestsStateCounts(t *testing.T) {
+	config, _, _ := statusRepos(t)
+	doc := statusJSON(t, 0, "--config", config)
+	if len(doc.Summary) != 3 || doc.Summary["total"] != 4.0 {
+		t.Fatalf("summary = %v, want only total, states, and health", doc.Summary)
+	}
+	states, _ := doc.Summary["states"].(map[string]any)
+	if len(states) != len(app.StatusStates()) || states["dirty"] != 1.0 || states["unknown"] != 1.0 {
+		t.Errorf("summary.states = %v", states)
+	}
+	if h, _ := doc.Summary["health"].(map[string]any); h["error"] != 1.0 {
+		t.Errorf("summary.health = %v", h)
 	}
 }
 
@@ -491,7 +507,7 @@ func TestStatusFailOnUnknownMatchesUnreadableRepositories(t *testing.T) {
 	tu.WriteFile(t, filepath.Join(repo, ".git", "index"), "garbage")
 	config := writeConfig(t, "[[repositories]]\npath = \""+repo+"\"\n")
 	doc := statusJSON(t, 3, "--config", config, "--fail-on", "dirty,unknown")
-	if r := entry(t, doc, "broken"); r["known"] != false || doc.Summary["unknown"] != 1.0 {
+	if r := entry(t, doc, "broken"); r["known"] != false || field(doc.Summary, "states.unknown") != 1.0 {
 		t.Errorf("known=%v summary=%v", r["known"], doc.Summary)
 	}
 }
