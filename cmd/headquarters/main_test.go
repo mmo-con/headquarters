@@ -383,8 +383,6 @@ func TestStatusReportsEveryRepository(t *testing.T) {
 	r := entry(t, doc, "clean")
 	for path, want := range map[string]any{
 		"path": clean, "family": "Work", "availability": "available", "known": true,
-		"operation":       "none",
-		"counts.modified": 0.0, "counts.untracked": 0.0, "counts.stashed": 0.0,
 		"remote.name": "origin",
 		"last_fetch":  nil, "fetch": nil, "error": nil,
 		// never fetched
@@ -402,7 +400,7 @@ func TestStatusReportsEveryRepository(t *testing.T) {
 		}
 	}
 	d := entry(t, doc, "dirty")
-	if field(d, "counts.modified") != 1.0 || d["health"] != "dirty" {
+	if field(d, "worktree.modified") != 1.0 || d["health"] != "dirty" {
 		t.Errorf("dirty: %v", d)
 	}
 }
@@ -485,6 +483,20 @@ func TestStatusUnbornHead(t *testing.T) {
 	wantFields(t, "empty", r, map[string]any{"head.state": "unborn", "head.branch": "main", "head.commit": nil})
 }
 
+func TestStatusGroupsWorktreeState(t *testing.T) {
+	config, _, _ := statusRepos(t)
+	r := entry(t, statusJSON(t, 0, "--config", config), "dirty")
+	wantFields(t, "dirty", r, map[string]any{
+		"worktree.operation": "none", "worktree.staged": 0.0, "worktree.modified": 1.0,
+		"worktree.deleted": 0.0, "worktree.renamed": 0.0, "worktree.conflicts": 0.0,
+		"worktree.untracked": 0.0, "stashes": 0.0,
+	})
+	wantAbsent(t, "dirty", r, "counts", "operation")
+	if w, _ := r["worktree"].(map[string]any); len(w) != 7 {
+		t.Errorf("worktree = %v, want only the operation and the counts", w)
+	}
+}
+
 func TestStatusSummaryNestsStateCounts(t *testing.T) {
 	config, _, _ := statusRepos(t)
 	doc := statusJSON(t, 0, "--config", config)
@@ -557,7 +569,7 @@ func TestStatusNeverReportsUnknownStateAsClean(t *testing.T) {
 	if r["known"] != false || r["health"] != "error" || r["availability"] != "missing" || r["error"] == nil {
 		t.Errorf("missing: %v", r)
 	}
-	for _, k := range []string{"head", "operation", "counts", "branches"} {
+	for _, k := range []string{"head", "worktree", "stashes", "branches"} {
 		if v, ok := r[k]; !ok || v != nil {
 			t.Errorf("missing.%s = %#v, want null", k, v)
 		}
