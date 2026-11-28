@@ -49,6 +49,8 @@ func Eligibility(r domain.Repository, storeBusy bool) Verdict {
 		return Blocked("state is unknown")
 	case r.Operation.Value != domain.NoOperation:
 		return Blocked(r.Operation.Value.String() + " in progress")
+	case r.Worktree.Value.OnlySubmoduleCommits():
+		return Blocked("submodules not updated; run git submodule update")
 	case r.Worktree.Value.HasTrackedChanges():
 		return Blocked("worktree contains local changes")
 	case r.Head.Value.Detached:

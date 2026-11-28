@@ -41,6 +41,13 @@ func TestEligibility(t *testing.T) {
 		{"rebase", func(r *domain.Repository) { r.Operation.Value = domain.Rebasing }, false, "rebasing in progress"},
 		{"dirty", func(r *domain.Repository) { r.Worktree.Value.Modified = 1 }, false, "worktree contains local changes"},
 		{"staged", func(r *domain.Repository) { r.Worktree.Value.Staged = 1 }, false, "worktree contains local changes"},
+		{"submodules behind", func(r *domain.Repository) { r.Worktree.Value.Modified, r.Worktree.Value.SubmoduleCommits = 2, 2 }, false,
+			"submodules not updated; run git submodule update"},
+		{"submodule and file", func(r *domain.Repository) { r.Worktree.Value.Modified, r.Worktree.Value.SubmoduleCommits = 2, 1 }, false,
+			"worktree contains local changes"},
+		{"submodule and staged file", func(r *domain.Repository) {
+			r.Worktree.Value.Modified, r.Worktree.Value.SubmoduleCommits, r.Worktree.Value.Staged = 1, 1, 1
+		}, false, "worktree contains local changes"},
 		{"detached", func(r *domain.Repository) { r.Head.Value.Detached = true }, false, "detached HEAD"},
 		{"unborn", func(r *domain.Repository) { r.Head.Value.Unborn = true }, false, "branch has no commits"},
 		{"no upstream", func(r *domain.Repository) { r.Upstream.Value.Configured = false }, false, "no upstream"},

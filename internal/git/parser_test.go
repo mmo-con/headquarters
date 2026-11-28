@@ -48,6 +48,22 @@ func TestParseStatusHeadersAndCounts(t *testing.T) {
 	}
 }
 
+func TestParseStatusCountsSubmoduleCommits(t *testing.T) {
+	out := "# branch.oid 1234567890abcdef\x00" +
+		"# branch.head main\x00" +
+		"1 .M SC.. 160000 160000 160000 aaa aaa moved\x00" + // new commit only
+		"1 .M SCM. 160000 160000 160000 aaa aaa moved-and-changed\x00" +
+		"1 .M S.M. 160000 160000 160000 aaa aaa changed\x00" +
+		"1 M. SC.. 160000 160000 160000 aaa bbb staged\x00"
+	st, err := ParseStatus([]byte(out), true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if w := st.Worktree; w.SubmoduleCommits != 1 || w.Modified != 3 || w.Staged != 1 {
+		t.Errorf("worktree = %+v, want 1 submodule commit, 3 modified, 1 staged", w)
+	}
+}
+
 func TestParseStatusSpecialHeads(t *testing.T) {
 	tests := []struct {
 		name  string

@@ -42,7 +42,15 @@ func ParseStatus(out []byte, untrackedChecked bool) (Status, error) {
 			if err != nil {
 				return Status{}, err
 			}
+			sub, err := field(rec, 2)
+			if err != nil {
+				return Status{}, err
+			}
 			countChange(&st.Worktree, xy)
+			// A submodule whose only change is its checked-out commit.
+			if xy == ".M" && sub == "SC.." {
+				st.Worktree.SubmoduleCommits++
+			}
 		case '2':
 			xy, err := field(rec, 1)
 			if err != nil {

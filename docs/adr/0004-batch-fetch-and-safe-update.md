@@ -97,6 +97,12 @@ rather than a later `@{upstream}`. `--no-autostash` overrides
 `merge.autoStash`; `--no-overwrite-ignore` makes ignored-file collisions fail
 instead of replacing files. Git itself refuses to overwrite untracked files.
 
+The fast-forward does not update submodules, like `git merge` itself. A
+submodule whose recorded commit moved stays at its old commit, so the
+worktree is modified and the next update is blocked. If these submodules are
+the only change, the reason names `git submodule update`; running it stays
+with the user or lazygit.
+
 Reporting only branches needing attention avoids noise without missing
 unpublished work, unlike a fixed base branch per repository. Asynchronous
 completion and store locking are specified in

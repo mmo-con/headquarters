@@ -134,6 +134,12 @@ A repository that changed after the update was planned, for example because
 another tool fetched new upstream commits, is skipped with
 `… since the update was planned; press u to try again`.
 
+A fast-forward does not update submodules: a submodule stays at its old
+commit and the repository counts as modified. If that is its only change,
+the next update is skipped with
+`submodules not updated; run git submodule update` instead of
+`worktree contains local changes`.
+
 ## Branch cleanup confirmation
 
 | Key | Action |

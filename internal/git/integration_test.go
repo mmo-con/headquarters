@@ -660,6 +660,35 @@ func TestFastForwardKeepsIgnoredFiles(t *testing.T) {
 	}
 }
 
+// TestFastForwardLeavesSubmodulesBehind verifies that a fast-forward that
+// moves a submodule leaves it at its old commit and that the inspection
+// reports this as a submodule commit, not only as a modified file.
+func TestFastForwardLeavesSubmodulesBehind(t *testing.T) {
+	tu.IsolateGit(t)
+	c := git.New("git")
+	base := tu.Canonical(t, t.TempDir())
+	lib := tu.InitRepo(t, filepath.Join(base, "lib"))
+	origin := tu.InitRepo(t, filepath.Join(base, "origin"))
+	tu.Git(t, origin, "-c", "protocol.file.allow=always", "submodule", "add", "-q", lib, "lib")
+	tu.Git(t, origin, "commit", "-q", "-m", "add lib")
+	tu.Git(t, base, "-c", "protocol.file.allow=always", "clone", "-q", "--recurse-submodules", origin, "clone")
+	clone := filepath.Join(base, "clone")
+	loc := validate(t, c, clone)
+
+	tu.Commit(t, lib, "l.txt", "l\n", "lib moves")
+	tu.Git(t, filepath.Join(origin, "lib"), "pull", "-q", "origin", "HEAD")
+	tu.Git(t, origin, "commit", "-q", "-am", "bump lib")
+	if err := c.Fetch(context.Background(), loc, git.FetchOptions{}); err != nil {
+		t.Fatal(err)
+	}
+	if err := c.MergeFastForwardOnly(context.Background(), loc, inspect(t, c, loc).Upstream.Value.CommitID); err != nil {
+		t.Fatal(err)
+	}
+	if w := inspect(t, c, loc).Worktree.Value; w.SubmoduleCommits != 1 || w.Modified != 1 || w.Staged != 0 {
+		t.Fatalf("worktree = %+v, want one submodule commit", w)
+	}
+}
+
 // countingGit returns a client whose Git executable logs one line per process
 // and then runs the real Git, and a function that returns and resets the count.
 func countingGit(t *testing.T) (*git.Client, func() int) {

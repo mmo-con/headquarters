@@ -139,11 +139,15 @@ func (o OperationInProgress) String() string {
 }
 
 type WorktreeState struct {
-	Staged           int
-	Modified         int
-	Deleted          int
-	Renamed          int
-	Conflicts        int
+	Staged    int
+	Modified  int
+	Deleted   int
+	Renamed   int
+	Conflicts int
+	// SubmoduleCommits counts the submodules whose only change is that their
+	// checked-out commit differs from the one recorded in HEAD, for example
+	// after a fast-forward moved them; they are also counted as Modified.
+	SubmoduleCommits int
 	Untracked        int
 	UntrackedChecked bool
 }
@@ -152,6 +156,13 @@ type WorktreeState struct {
 // count as dirty.
 func (w WorktreeState) Clean() bool {
 	return !w.HasTrackedChanges() && w.Untracked == 0
+}
+
+// OnlySubmoduleCommits reports whether the only tracked changes are
+// submodules checked out at another commit than the one recorded in HEAD.
+func (w WorktreeState) OnlySubmoduleCommits() bool {
+	return w.SubmoduleCommits > 0 && w.Modified == w.SubmoduleCommits &&
+		w.Staged == 0 && w.Deleted == 0 && w.Renamed == 0 && w.Conflicts == 0
 }
 
 // HasTrackedChanges reports whether tracked files differ from HEAD.
