@@ -27,9 +27,10 @@ Git client, such as [gitui](https://github.com/gitui-org/gitui) or
 > headquarters manages the repository collection. lazygit manages the
 > individual repository.
 
-![headquarters in the tree view: repositories grouped by family with health
-symbols, family summaries, and the detail panel of the selected
-repository](docs/images/headquarters-screenshot.png)
+![Demo of headquarters: the flat list with the detail panel, switching to the
+family tree, quick and text filters, sorting by health, fetching marked
+repositories, a safe update of a family, and the branch cleanup of merged
+branches](docs/images/headquarters-demo.gif)
 
 ## Quick start
 
