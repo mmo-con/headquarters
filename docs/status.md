@@ -107,6 +107,8 @@ own `schema` field; there is no `generated_at` and no `summary`.
 - `states` lists the `--fail-on` states that the repository is in, in the
   order of `headquarters status -h`, for example to see why its `health` is
   `attention`. It contains `unknown` exactly when `known` is `false`.
+  `states`, `health`, `--filter`, and `--fail-on` evaluate the age of the
+  last fetch at the same moment, so they agree on `stale`.
 - `health` is the level of the dashboard's health column: `error`,
   `critical`, `dirty`, `behind`, `ahead`, `attention`, `ok`, or `unknown`.
 - `family` is `null` for repositories without a family, which the dashboard
