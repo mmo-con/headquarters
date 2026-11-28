@@ -89,8 +89,9 @@ incoming_commits = 10
 # Unset keys keep their defaults. NO_COLOR disables all colors.
 # preset selects a built-in scheme: default, high-contrast, low-color,
 # monochrome, catppuccin-mocha, catppuccin-latte, dracula, gruvbox-dark,
-# gruvbox-light, monokai, or onedark; the keys below override single colors
-# of the preset.
+# gruvbox-light, monokai, or onedark; catppuccin and gruvbox choose the dark
+# or light variant by the terminal background. The keys below override single
+# colors of the preset.
 [ui.theme]
 preset = "default"
 active_border = "green"

@@ -169,7 +169,10 @@ type Model struct {
 	fatal error
 	now   func() time.Time
 
-	theme    theme
+	theme theme
+	// dark reports whether the terminal background is dark; it selects
+	// the variant of a theme family.
+	dark     bool
 	icons    icons
 	frame    int
 	spinning bool
@@ -192,7 +195,8 @@ func New(a *app.Application) *Model {
 		width:            100,
 		height:           30,
 		now:              time.Now,
-		theme:            newTheme(a.Config.UI.Theme),
+		dark:             true,
+		theme:            newTheme(a.Config.UI.ThemeFor(true)),
 		icons:            iconSet(a.Config.UI.Icons),
 		tree:             a.Config.UI.View == "tree",
 		sortKey:          configuredSort(a.Config.UI),
@@ -202,6 +206,13 @@ func New(a *app.Application) *Model {
 		func() time.Time { return m.now() })
 	m.inspections = app.NewInspections(a, func(js []jobs.Job) uint64 { return m.submit(js, m.applyInspection) })
 	return m
+}
+
+// SetDarkBackground sets whether the terminal background is dark, which
+// selects the variant of a theme family. The default is dark.
+func (m *Model) SetDarkBackground(dark bool) {
+	m.dark = dark
+	m.theme = newTheme(m.app.Config.UI.ThemeFor(dark))
 }
 
 // configuredSort returns the sort order of [ui].sort; the configuration

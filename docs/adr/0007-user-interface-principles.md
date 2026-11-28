@@ -33,6 +33,13 @@ and behind. Local work comes first, relation to upstream last. Findings
 without counts share a textual State column. Apply colors per cell; success
 has its own color, distinct from ahead.
 
+Fixed-color themes that come in a dark and a light variant can be chosen as
+a family. The variant follows the terminal background as Lip Gloss
+determines it once at startup, before Bubble Tea owns the input; the result
+is kept for the whole run, including reloads. The background is not queried
+again while the interface runs, because the answer would interleave with
+key input. An unknown background counts as dark.
+
 ## Consequences
 
 - Table and detail panels sit side by side from 130 columns, otherwise

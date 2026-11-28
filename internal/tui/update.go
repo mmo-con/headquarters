@@ -132,7 +132,7 @@ func (m *Model) applyInventory(msg inventoryMsg) {
 		}
 		m.app.Activate(msg.loaded)
 	}
-	m.theme = newTheme(m.app.Config.UI.Theme)
+	m.theme = newTheme(m.app.Config.UI.ThemeFor(m.dark))
 	m.icons = iconSet(m.app.Config.UI.Icons)
 	m.repos = msg.result.Repositories
 	m.warnings = msg.result.Warnings

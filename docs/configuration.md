@@ -226,20 +226,26 @@ single colors of the preset.
 | `high-contrast` | bright ANSI colors and the terminal's default foreground for secondary text |
 | `low-color` | only the eight basic ANSI colors, for limited terminals |
 | `monochrome` | no hues; the selected row is inverted |
+| `catppuccin` | `catppuccin-mocha` or `catppuccin-latte`, by the terminal background |
 | `catppuccin-mocha` / `catppuccin-latte` | Catppuccin, dark / light background |
 | `dracula` | Dracula, dark background |
+| `gruvbox` | `gruvbox-dark` or `gruvbox-light`, by the terminal background |
 | `gruvbox-dark` / `gruvbox-light` | Gruvbox, dark / light background |
 | `monokai` | Monokai, dark background |
 | `onedark` | One Dark, dark background |
 
 The ANSI-based presets follow the terminal's palette and suit light and dark
 backgrounds. The other presets use fixed `#rrggbb` colors and require a
-terminal with true color support; choose the variant that matches the
-terminal background.
+terminal with true color support. `catppuccin` and `gruvbox` choose the
+dark or light variant themselves: headquarters asks the terminal for its
+background color once at startup and keeps the answer for reloads with
+`R`. A terminal that does not answer, such as tmux
+without passthrough, counts as dark; choose the variant explicitly there.
+Color keys override both variants.
 
 ```toml
 [ui.theme]
-preset = "gruvbox-dark"
+preset = "gruvbox"
 selected_accent = "#fe8019"
 ```
 

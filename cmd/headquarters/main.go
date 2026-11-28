@@ -87,10 +87,15 @@ func run(args []string, stdout, stderr io.Writer, getenv func(string) string) in
 		return check(a, stdout)
 	}
 
+	model := tui.New(a)
 	if getenv("NO_COLOR") != "" {
 		lipgloss.SetColorProfile(termenv.Ascii)
+	} else {
+		// Lip Gloss queries the terminal once, before Bubble Tea reads the
+		// input, and caches the result, so a theme family chosen later
+		// with R uses it too; a failed query counts as dark.
+		model.SetDarkBackground(lipgloss.HasDarkBackground())
 	}
-	model := tui.New(a)
 	if _, err := tea.NewProgram(model, tea.WithAltScreen()).Run(); err != nil {
 		fmt.Fprintln(stderr, "headquarters:", err)
 		return 1
