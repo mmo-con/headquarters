@@ -6,12 +6,12 @@ accesses the network only with `--fetch`
 ([ADR 0016](adr/0016-non-interactive-status-command.md)).
 
 ```sh
-headquarters status [--config FILE] [--json | --format json|ndjson]
+headquarters status [--config FILE] [--format json|ndjson]
                     [--filter EXPR] [--fetch] [--fail-on STATES] [PATH]
 ```
 
 ```sh
-headquarters status --json                                    # one JSON document
+headquarters status                                           # one JSON document
 headquarters status --filter "is:dirty family:work"           # dashboard filter syntax
 headquarters status --format ndjson                           # one repository per line
 headquarters status --fail-on dirty,ahead,unpublished,unknown # exit 3 if any repository matches
