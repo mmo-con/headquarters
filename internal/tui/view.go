@@ -93,7 +93,7 @@ func (m *Model) headerLine() string {
 		n := 0
 		f := app.Filter{Family: scope.Family, Text: q.token}
 		for i := range m.repos {
-			if f.Matches(&m.repos[i], false) {
+			if m.matches(f, &m.repos[i], false) {
 				n++
 			}
 		}

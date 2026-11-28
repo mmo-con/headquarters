@@ -159,6 +159,26 @@ func TestRepoViewportKeepsContextAndLetsCursorMoveBackUp(t *testing.T) {
 	}
 }
 
+func TestStaleFilterUsesTheClockOfTheModel(t *testing.T) {
+	m := newModel(t)
+	// Five days before the clock of the model, so the fetch is not stale
+	// then, but long before the time the test runs.
+	now := time.Date(2020, 1, 10, 12, 0, 0, 0, time.UTC)
+	m.now = func() time.Time { return now }
+	fetched := now.Add(-5 * 24 * time.Hour)
+	r := repo("svc", "Work", false)
+	r.Remotes = domain.KnownValue([]domain.Remote{{Name: "origin", URL: "https://example.com/svc.git"}})
+	r.LastFetch = domain.KnownValue(&fetched)
+	m.Update(inventoryMsg{result: inventory.Result{Repositories: []domain.Repository{r}}})
+	if h := m.headerLine(); !strings.Contains(h, " 8 stale 0 ") {
+		t.Errorf("the header must count stale fetches at the time of the model: %q", h)
+	}
+	keys(m, "8")
+	if got := names(m); got != "" {
+		t.Errorf("is:stale must match at the time of the model, got %q", got)
+	}
+}
+
 func TestQuickFilterHeaderMarksActiveFilter(t *testing.T) {
 	m := newModel(t)
 	if view := m.View(); !strings.Contains(view, "headquarters") {
