@@ -229,6 +229,8 @@ single colors of the preset.
 | `catppuccin-mocha` / `catppuccin-latte` | Catppuccin, dark / light background |
 | `dracula` | Dracula, dark background |
 | `gruvbox-dark` / `gruvbox-light` | Gruvbox, dark / light background |
+| `monokai` | Monokai, dark background |
+| `onedark` | One Dark, dark background |
 
 The ANSI-based presets follow the terminal's palette and suit light and dark
 backgrounds. The other presets use fixed `#rrggbb` colors and require a
