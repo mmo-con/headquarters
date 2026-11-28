@@ -314,37 +314,44 @@ func (b *builder) ui(u fileUI) {
 }
 
 func (b *builder) theme(t fileTheme) {
-	cfg := &b.cfg.UI.Theme
+	ui := &b.cfg.UI
 	if t.Preset != "" {
 		if p, ok := ThemePresets[t.Preset]; ok {
-			*cfg = p
+			ui.Theme, ui.LightTheme = p, nil
+		} else if f, ok := ThemeFamilies[t.Preset]; ok {
+			light := ThemePresets[f.Light]
+			ui.Theme, ui.LightTheme = ThemePresets[f.Dark], &light
 		} else {
 			b.errorf("[ui.theme].preset must be one of %s, not %q", strings.Join(ThemePresetNames(), ", "), t.Preset)
 		}
 	}
+	themes := []*Theme{&ui.Theme}
+	if ui.LightTheme != nil {
+		themes = append(themes, ui.LightTheme)
+	}
 	for _, c := range []struct {
-		key  string
-		val  string
-		dest *string
+		key   string
+		val   string
+		field func(*Theme) *string
 	}{
-		{"active_border", t.ActiveBorder, &cfg.ActiveBorder},
-		{"inactive_border", t.InactiveBorder, &cfg.InactiveBorder},
-		{"title", t.Title, &cfg.Title},
-		{"selected_background", t.SelectedBackground, &cfg.SelectedBackground},
-		{"selected_foreground", t.SelectedForeground, &cfg.SelectedForeground},
-		{"selected_accent", t.SelectedAccent, &cfg.SelectedAccent},
-		{"header_background", t.HeaderBackground, &cfg.HeaderBackground},
-		{"header_foreground", t.HeaderForeground, &cfg.HeaderForeground},
-		{"key", t.Key, &cfg.Key},
-		{"branch", t.Branch, &cfg.Branch},
-		{"clean", t.Clean, &cfg.Clean},
-		{"dirty", t.Dirty, &cfg.Dirty},
-		{"ahead", t.Ahead, &cfg.Ahead},
-		{"behind", t.Behind, &cfg.Behind},
-		{"success", t.Success, &cfg.Success},
-		{"error", t.Error, &cfg.Error},
-		{"warning", t.Warning, &cfg.Warning},
-		{"dim", t.Dim, &cfg.Dim},
+		{"active_border", t.ActiveBorder, func(t *Theme) *string { return &t.ActiveBorder }},
+		{"inactive_border", t.InactiveBorder, func(t *Theme) *string { return &t.InactiveBorder }},
+		{"title", t.Title, func(t *Theme) *string { return &t.Title }},
+		{"selected_background", t.SelectedBackground, func(t *Theme) *string { return &t.SelectedBackground }},
+		{"selected_foreground", t.SelectedForeground, func(t *Theme) *string { return &t.SelectedForeground }},
+		{"selected_accent", t.SelectedAccent, func(t *Theme) *string { return &t.SelectedAccent }},
+		{"header_background", t.HeaderBackground, func(t *Theme) *string { return &t.HeaderBackground }},
+		{"header_foreground", t.HeaderForeground, func(t *Theme) *string { return &t.HeaderForeground }},
+		{"key", t.Key, func(t *Theme) *string { return &t.Key }},
+		{"branch", t.Branch, func(t *Theme) *string { return &t.Branch }},
+		{"clean", t.Clean, func(t *Theme) *string { return &t.Clean }},
+		{"dirty", t.Dirty, func(t *Theme) *string { return &t.Dirty }},
+		{"ahead", t.Ahead, func(t *Theme) *string { return &t.Ahead }},
+		{"behind", t.Behind, func(t *Theme) *string { return &t.Behind }},
+		{"success", t.Success, func(t *Theme) *string { return &t.Success }},
+		{"error", t.Error, func(t *Theme) *string { return &t.Error }},
+		{"warning", t.Warning, func(t *Theme) *string { return &t.Warning }},
+		{"dim", t.Dim, func(t *Theme) *string { return &t.Dim }},
 	} {
 		if c.val == "" {
 			continue
@@ -353,7 +360,9 @@ func (b *builder) theme(t fileTheme) {
 			b.errorf("[ui.theme].%s: %v", c.key, err)
 			continue
 		}
-		*c.dest = c.val
+		for _, th := range themes {
+			*c.field(th) = c.val
+		}
 	}
 }
 

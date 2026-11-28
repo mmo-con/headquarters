@@ -214,6 +214,72 @@ func TestOneDarkAndMonokaiPresets(t *testing.T) {
 	}
 }
 
+func TestThemeFamilyFollowsBackground(t *testing.T) {
+	for family, v := range ThemeFamilies {
+		cfg, err := Parse([]byte("version = 1\n[ui.theme]\npreset = \""+family+"\"\n"), "/x", env(nil))
+		if err != nil {
+			t.Errorf("family %s: %v", family, err)
+			continue
+		}
+		if cfg.UI.ThemeFor(true) != ThemePresets[v.Dark] || cfg.UI.ThemeFor(false) != ThemePresets[v.Light] {
+			t.Errorf("family %s must use %s on dark and %s on light backgrounds", family, v.Dark, v.Light)
+		}
+	}
+	if len(ThemeFamilies) == 0 {
+		t.Error("no theme families")
+	}
+}
+
+func TestThemeFamilyVariantsArePresets(t *testing.T) {
+	for family, v := range ThemeFamilies {
+		for _, name := range []string{v.Dark, v.Light} {
+			if _, ok := ThemePresets[name]; !ok {
+				t.Errorf("family %s: no preset %q", family, name)
+			}
+		}
+		if _, ok := ThemePresets[family]; ok {
+			t.Errorf("family %s shadows a preset of the same name", family)
+		}
+	}
+}
+
+func TestThemeFamilyOverridesApplyToBothVariants(t *testing.T) {
+	cfg, err := Parse([]byte("version = 1\n[ui.theme]\npreset = \"gruvbox\"\nerror = \"red\"\n"), "/x", env(nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, dark := range []bool{true, false} {
+		th := cfg.UI.ThemeFor(dark)
+		want := ThemePresets["gruvbox-light"]
+		if dark {
+			want = ThemePresets["gruvbox-dark"]
+		}
+		want.Error = "red"
+		if th != want {
+			t.Errorf("dark=%v: %+v, want %+v", dark, th, want)
+		}
+	}
+}
+
+func TestFixedThemeIgnoresBackground(t *testing.T) {
+	for _, data := range []string{"version = 1\n", "version = 1\n[ui.theme]\npreset = \"dracula\"\n"} {
+		cfg, err := Parse([]byte(data), "/x", env(nil))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if cfg.UI.ThemeFor(false) != cfg.UI.Theme || cfg.UI.ThemeFor(true) != cfg.UI.Theme {
+			t.Errorf("%q: a fixed theme must not depend on the background", data)
+		}
+	}
+}
+
+func TestUnknownPresetNamesFamilies(t *testing.T) {
+	_, err := Parse([]byte("version = 1\n[ui.theme]\npreset = \"solarized\"\n"), "/x", env(nil))
+	if err == nil || !strings.Contains(err.Error(), "catppuccin,") || !strings.Contains(err.Error(), "gruvbox,") {
+		t.Fatalf("the error must list the families: %v", err)
+	}
+}
+
 func TestBranchesSettings(t *testing.T) {
 	cfg, err := Parse([]byte("version = 1\n[[repositories]]\npath = \"/a\"\n"), "/x", env(nil))
 	if err != nil {
